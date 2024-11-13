@@ -13,6 +13,7 @@ import newsplease
 from newsplease import NewsPlease
 import matplotlib.pyplot as plt
 import json
+import sys
 
 def saveResults(results):
     file = open("results.json", "w")
@@ -85,11 +86,14 @@ def scrap_articles(filename: str) -> []:
     return articles
 
 #This function analyzes the articles in the "sabc_articles.txt" file
-def analyze_sabc_articles() -> [[]]:
+def analyze_sabc_articles() -> []:
     sabc_articles = scrap_articles("sabc_articles.txt")
     results = analyze(sabc_articles)
     saveResults(results)
-    x = np.array(range(0,len(sabc_articles)))
+    return results
+
+def plot_result(results):
+    x = np.array(range(0,len(results)))
     #positive
     y = np.array(results).T[0]
     plt.title("plotting the sentiment of SABC")
@@ -98,25 +102,37 @@ def analyze_sabc_articles() -> [[]]:
             x[i],
             array,
             color="#0e7800",
-            marker="o",
-            label=f"Array #{i}",
+            marker="."
         )
     #negative
     y = np.array(results).T[1]
-    plt.title("plotting the sentiment of SABC")
     for i, array in enumerate(y):
         plt.plot(
             x[i],
             array,
             color="#ed1103",
-            marker="o",
-            label=f"Array #{i}",
+            marker="."
         )
     plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.show()
 
+    #The difference between the positive and the negative value
+    y = np.array(results).T[0] - np.array(results).T[1]
+    coef = np.polyfit(x,y,1)
+    poly1d_fn = np.poly1d(coef) 
+    # poly1d_fn is now a function which takes in x and returns an estimate for y
+
+    plt.plot(x,y, 'yo', x, poly1d_fn(x), '--k')
+    plt.show()
+
 def main():
-    analyze_sabc_articles()
+    results = []
+    if sys.argv.count("offline") == 0:
+        results = analyze_sabc_articles()
+    else:
+        json_results = open("results.json", "r")
+        results = json.load(json_results)
+    plot_result(results=results)
 
 if __name__=="__main__":
     main()
