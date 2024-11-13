@@ -10,44 +10,45 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 import numpy as np
 import newsplease
-from newsplease import NewsPlease
+from newsplease import NewsPlease, NewsArticle
 import matplotlib.pyplot as plt
 import json
 import sys
 import os
+import hashlib
 
 #necessary due to the fact, that NewsArticle can not be serialized as json
 class StorableArticle:
-    maintext: str
-    source_domain: str
-    title: str
-    url: str
-    description: str
-    date_publish: str
-    date_download: str
+    maintext: str = ""
+    source_domain: str = ""
+    title: str = ""
+    url: str = ""
+    description: str = ""
+    date_publish: str = ""
+    date_download: str = ""
 
     def __init__(self, old_article):
-        self.maintext = old_article.maintext
-        self.source_domain = old_article.source_domain
-        self.title = old_article.title
-        self.url = old_article.url
-        self.description = old_article.description
-        self.date_publish = str(old_article.date_publish)
-        self.date_download = str(old_article.date_download)
+        if isinstance(old_article, dict):
+            self.__dict__.update(old_article)
+        else:
+            self.maintext = old_article.maintext
+            self.source_domain = old_article.source_domain
+            self.title = old_article.title
+            self.url = old_article.url
+            self.description = old_article.description
+            self.date_publish = str(old_article.date_publish)
+            self.date_download = str(old_article.date_download)
 
-
-    # def serialize(self):
-    #     return {"maintext": self.maintext,
-    #             "source_domain": self.source_domain,
-    #             "title": self.title,
-    #             "url": self.url,
-    #             "description": self.description}
-
-
-# subclass JSONEncoder
 class ArticleEncoder(json.JSONEncoder):
         def default(self, o):
             return o.__dict__
+
+class ArticleDecoder(json.JSONDecoder):
+        def default(self, o):
+            return o.__dict__
+
+def convert_to_hash(link: str) -> str:
+    return hashlib.sha256(bytes(link, "utf-8")).hexdigest()
 
 def convert_to_storable_article(
     old_article) -> StorableArticle:
@@ -58,7 +59,7 @@ def saveArticle(article, newssite, link):
     article_as_json = json.dumps(storable_article, cls=ArticleEncoder)
     if not os.path.isdir(f"articles_{newssite}"):
         os.mkdir(f"articles_{newssite}")
-    filename = f"articles_{newssite}/articles_{str(hash(link))}.json"
+    filename = f"articles_{newssite}/articles_{convert_to_hash(link)}.json"
     file = open(filename, "w")
     file.write(article_as_json)
 
@@ -124,26 +125,39 @@ def analyze_articles(articles) -> [[int]]:
         print(f"Analyzing... {i}/{len(articles)}")
     return sentiment_results
 
-def scrap_articles(filename: str) -> []:
+def download_article(link: str, newssite: str) -> NewsArticle:
+    article = StorableArticle(NewsPlease.from_url(link))
+    saveArticle(article=article, newssite="sabc", link=link)
+    return article
+
+def scrap_articles(filename: str, newssite: str) -> []:
     file = open(filename)
     lines = file.readlines()
     articles = []
-    for i, line in enumerate(lines):
+    for i, link in enumerate(lines):
         article: NewsArticle
-        if os.path.isfile(f"articles_sabc/articles_{str(hash(line))}"):
-            article = NewsPlease.from_file(f"articles_sabc/articles_{str(hash(line))}.json")
+        potential_filename = f"articles_{newssite}/articles_{convert_to_hash(link)}.json" 
+        exists_file = os.path.isfile(potential_filename)
+        in_offline_mode = sys.argv.count("offline") >= 1
+        if exists_file and in_offline_mode:
+            print(f"found {potential_filename} in cache")
+            file = open(potential_filename, "r")
+            article = json.loads(str(file.read()), object_hook=StorableArticle)
+            if article.maintext == "":
+                article = download_article(link=link, newssite=newssite)
         else:
-            article = NewsPlease.from_url(line)
+            article = download_article(link=link, newssite=newssite)
+        if article.maintext == "":
+            continue
         articles.append(article)
-        saveArticle(article=article, newssite=filename.split("_")[0], link=line)
         print(f"Scrapping... {i}/{len(lines)}")
     return articles
 
 #This function analyzes the articles in the "sabc_articles.txt" file
 def analyze_sabc_articles() -> []:
-    sabc_articles = scrap_articles("sabc_articles.txt")
+    sabc_articles = scrap_articles("sabc_articles.txt", "sabc")
     results = analyze_articles(sabc_articles)
-    saveResults(results)
+    saveResults(results, "sabc")
     return results
 
 def plot_result(results):
@@ -156,12 +170,11 @@ def plot_result(results):
     #negative
     #The difference between the positive and the negative value
     y2 = np.array(results).T[1]
-    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     coef2 = np.polyfit(x,y2,1)
     neg_fn = np.poly1d(coef2) 
     plt.plot(x,y1,x,y2)
-    plt.plot(pos_fn(x), '--k', color="#0e7800")
-    plt.plot(neg_fn(x), "--k", color="#ed1103")
+    plt.plot(pos_fn(x), color="#0e7800", linestyle="dashed")
+    plt.plot(neg_fn(x), color="#ed1103", linestyle="dashed")
     plt.show()
 
 
@@ -174,11 +187,11 @@ def plot_result(results):
 
 def main():
     results = []
-    if sys.argv.count("offline") == 0:
-        results = analyze_sabc_articles()
+    use_cache = sys.argv.count("cache") > 0
+    if use_cache:
+        results = json.loads(open("results_sabc.json").read())
     else:
-        json_results = open("results.json", "r")
-        results = json.load(json_results)
+        results = analyze_sabc_articles()
     plot_result(results=results)
 
 if __name__=="__main__":
