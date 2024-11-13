@@ -16,17 +16,17 @@ def get_article_urls(limit: int, keyword: str) -> []:
             a_s = article.find_all("a")
             for a in a_s:
                 href = a["href"]
-                article_urls.append(href)
+                if article_urls.count(href) == 0:
+                    article_urls.append(href)
+                    print(f"{len(article_urls)}/{limit}")
         pageindex += 1
+
     return article_urls
 
 
 
 
 links = get_article_urls(500, "trump")
-for link in links:
-    if links.count(link) > 1:
-        links.remove(link)
 
 file = open("sabc_articles.txt", "w")
 for link in links:
