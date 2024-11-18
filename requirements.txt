@@ -1,0 +1,5 @@
+bs4
+requests
+news-please
+matplotlib
+nltk

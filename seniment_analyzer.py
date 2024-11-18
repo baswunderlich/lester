@@ -16,6 +16,20 @@ import json
 import sys
 import os
 import hashlib
+from threading import Thread
+
+
+# custom thread
+class AnalyzerThread(Thread):
+    def __init__(self, program, keyword):
+        self.program = program
+        self.results = []
+        self.keyword = keyword
+        Thread.__init__(self)
+
+
+    def run(self):
+	    self.results = self.program(self.keyword)
 
 #necessary due to the fact, that NewsArticle can not be serialized as json
 class StorableArticle:
@@ -76,12 +90,12 @@ def clean_text(text) -> str:
     cleaned_text = lower_case.translate(str.maketrans('', '', string.punctuation))
 
     # Using word_tokenize because it's faster than split()
-    tokenized_words = word_tokenize(cleaned_text, "german")
+    tokenized_words = word_tokenize(cleaned_text)
 
     # Removing Stop Words
     final_words = []
     for word in tokenized_words:
-        if word not in stopwords.words('german'):
+        if word not in stopwords.words():
             final_words.append(word)
 
     # Lemmatization - From plural to single + Base form of a word (example better-> good)
@@ -127,14 +141,20 @@ def analyze_articles(articles) -> [[int]]:
 
 def download_article(link: str, newssite: str) -> NewsArticle:
     article = StorableArticle(NewsPlease.from_url(link))
-    saveArticle(article=article, newssite="sabc", link=link)
+    saveArticle(article=article, newssite=newssite, link=link)
     return article
 
-def scrap_articles(filename: str, newssite: str) -> []:
-    file = open(filename)
+def scrap_articles(keyword: str, newssite: str) -> []:
+    filename_article_hrefs = f"articles_{newssite}_{keyword}.txt"
+    if os.path.isfile(filename_article_hrefs):
+        file = open(filename_article_hrefs)
+    else:
+        print(f"No hrefs file was found for: keyword={keyword}, newssite={newssite}\n => {filename_article_hrefs}")
+        return []    
     lines = file.readlines()
     articles = []
     for i, link in enumerate(lines):
+        link = link.strip()
         article: NewsArticle
         potential_filename = f"articles_{newssite}/articles_{convert_to_hash(link)}.json" 
         exists_file = os.path.isfile(potential_filename)
@@ -153,18 +173,23 @@ def scrap_articles(filename: str, newssite: str) -> []:
         print(f"Scrapping... {i}/{len(lines)}")
     return articles
 
-#This function analyzes the articles in the "sabc_articles.txt" file
-def analyze_sabc_articles() -> []:
-    sabc_articles = scrap_articles("sabc_articles.txt", "sabc")
+def analyze_sabc_articles(keyword: str) -> []:
+    sabc_articles = scrap_articles(keyword=keyword, newssite="sabc")
     results = analyze_articles(sabc_articles)
     saveResults(results, "sabc")
     return results
+    
+def analyze_rferl_articles(keyword: str) -> []:
+    sabc_articles = scrap_articles(keyword=keyword, newssite="rferl")
+    results = analyze_articles(sabc_articles)
+    saveResults(results, "rferl")
+    return results
 
-def plot_result(results):
+def plot_result(results, newssite):
     x = np.array(range(0,len(results)))
     #positive
     y1 = np.array(results).T[0]
-    plt.title("plotting the sentiment of SABC")
+    plt.title(f"plotting the sentiment of {newssite}")
     coef1 = np.polyfit(x,y1,1)
     pos_fn = np.poly1d(coef1) 
     #negative
@@ -185,14 +210,46 @@ def plot_result(results):
     plt.plot(x,y, 'yo', x, poly1d_fn(x), '--k')
     plt.show()
 
-def main():
+def generate_results_sabc(keyword: str):
     results = []
     use_cache = sys.argv.count("cache") > 0
     if use_cache:
-        results = json.loads(open("results_sabc.json").read())
+        results = json.loads(open(f"results_sabc_{keyword}.json").read())
     else:
-        results = analyze_sabc_articles()
-    plot_result(results=results)
+        results = analyze_sabc_articles(keyword=keyword)
+    return results
+
+def generate_results_rferl(keyword: str):
+    results = []
+    use_cache = sys.argv.count("cache") > 0
+    if use_cache:
+        results = json.loads(open(f"results_rferl_{keyword}.json").read())
+    else:
+        results = analyze_rferl_articles(keyword=keyword)
+    return results
+
+def main():
+    keyword = sys.argv[1]
+
+    t1 = AnalyzerThread(program=generate_results_sabc, keyword=keyword)
+    t2 = AnalyzerThread(program=generate_results_rferl, keyword=keyword)
+
+    if sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0:
+        t1.start()
+    if sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0:
+        t2.start()
+    
+    t1.join()
+    t2.join()
+    
+    results_sabc = t1.results
+    results_rferl = t2.results
+
+    print(results_sabc)
+    print(results_rferl)
+
+    plot_result(results=results_sabc, newssite="sabc")
+    plot_result(results=results_rferl, newssite="rferl")
 
 if __name__=="__main__":
     main()
