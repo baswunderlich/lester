@@ -9,11 +9,13 @@ Python: 3.10.4
     python ./sentiment_analyzer.py <keyword>
     
 optional arguments:
+
     - offline
     - cache
     - all / <newssite e.g. sabc>
 
 Example: 
+
     python ./sentiment_analyzer.py trees cache sabc
 
     offline: Will not download any articles
