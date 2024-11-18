@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["refugees", "offline", "all"]
+            "args": ["refugees", "offline", "rferl", "cache"]
         }
     ]
 }
