@@ -154,6 +154,8 @@ def scrap_articles(keyword: str, newssite: str) -> []:
     lines = file.readlines()
     articles = []
     for i, link in enumerate(lines):
+        if link == "":
+            break
         link = link.strip()
         article: NewsArticle
         potential_filename = f"articles_{newssite}/articles_{convert_to_hash(link)}.json" 
