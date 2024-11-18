@@ -28,4 +28,4 @@ Example:
 offline: Will not download any articles
 cache: When set, no articles will be analyzed but the stored results will be used
 all: All known newssites articles will be analyzed
-<newssite>: Just this ONE newssite will ne analyzed
+\<newssite\>: Just this ONE newssite will ne analyzed
