@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["trump", "offline", "cache", "all"]
+            "args": ["refugees", "offline", "all"]
         }
     ]
 }

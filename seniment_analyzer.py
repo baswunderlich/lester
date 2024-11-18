@@ -20,16 +20,17 @@ from threading import Thread
 
 
 # custom thread
-class AnalyzerThread(Thread):
-    def __init__(self, program, keyword):
+class ScraperThread(Thread):
+    def __init__(self, program, newssite, keyword):
         self.program = program
-        self.results = []
+        self.articles = []
+        self.newssite = newssite
         self.keyword = keyword
         Thread.__init__(self)
 
 
     def run(self):
-	    self.results = self.program(self.keyword)
+	    self.articles = self.program(keyword=self.keyword, newssite=self.newssite)
 
 #necessary due to the fact, that NewsArticle can not be serialized as json
 class StorableArticle:
@@ -77,8 +78,8 @@ def saveArticle(article, newssite, link):
     file = open(filename, "w")
     file.write(article_as_json)
 
-def saveResults(results, newssite):
-    file = open(f"results_{newssite}.json", "w")
+def saveResults(results, newssite, keyword):
+    file = open(f"results_{newssite}_{keyword}.json", "w")
     results_as_json = json.dumps(results)
     file.write(results_as_json)
 
@@ -94,8 +95,9 @@ def clean_text(text) -> str:
 
     # Removing Stop Words
     final_words = []
+    stop_words = stopwords.words('english')
     for word in tokenized_words:
-        if word not in stopwords.words():
+        if word not in stop_words:
             final_words.append(word)
 
     # Lemmatization - From plural to single + Base form of a word (example better-> good)
@@ -128,7 +130,7 @@ def sentiment_analyse(sentiment_text) -> [int]:
 #This function returns a list of tuples. Every tuple contains the following:
 # [0]: The positive value 
 # [1]: The negative value.
-def analyze_articles(articles) -> [[int]]:
+def analyze_articles(articles: [NewsArticle], newssite: str, keyword: str) -> [[int]]:
     sentiment_results = []
     for i, article in enumerate(articles):
         text = ""
@@ -136,7 +138,8 @@ def analyze_articles(articles) -> [[int]]:
             text = article.maintext
         cleaned_text = clean_text(text)
         sentiment_results.append(sentiment_analyse(cleaned_text))
-        print(f"Analyzing... {i}/{len(articles)}")
+        print(f"Analyzing... {i}/{len(articles)} ({newssite})")
+    saveResults(sentiment_results, newssite=newssite, keyword=keyword)
     return sentiment_results
 
 def download_article(link: str, newssite: str) -> NewsArticle:
@@ -161,31 +164,27 @@ def scrap_articles(keyword: str, newssite: str) -> []:
         potential_filename = f"articles_{newssite}/articles_{convert_to_hash(link)}.json" 
         exists_file = os.path.isfile(potential_filename)
         in_offline_mode = sys.argv.count("offline") >= 1
-        if exists_file and in_offline_mode:
+        if exists_file:
             print(f"found {potential_filename} in cache")
             file = open(potential_filename, "r")
             article = json.loads(str(file.read()), object_hook=StorableArticle)
             if article.maintext == "":
                 article = download_article(link=link, newssite=newssite)
-        else:
+        elif not in_offline_mode:
             article = download_article(link=link, newssite=newssite)
         if article.maintext == "":
             continue
         articles.append(article)
-        print(f"Scrapping... {i}/{len(lines)}")
+        print(f"Scrapping... {i}/{len(lines)} ({newssite})")
     return articles
 
-def analyze_sabc_articles(keyword: str) -> []:
+def scrap_sabc_articles(keyword: str) -> []:
     sabc_articles = scrap_articles(keyword=keyword, newssite="sabc")
-    results = analyze_articles(sabc_articles)
-    saveResults(results, "sabc")
-    return results
-    
-def analyze_rferl_articles(keyword: str) -> []:
-    sabc_articles = scrap_articles(keyword=keyword, newssite="rferl")
-    results = analyze_articles(sabc_articles)
-    saveResults(results, "rferl")
-    return results
+    return sabc_articles
+
+def scrap_rferl_articles(keyword: str) -> []:
+    rferl_articles = scrap_articles(keyword=keyword, newssite="rferl")
+    return rferl_articles
 
 def plot_result(results, newssite):
     x = np.array(range(0,len(results)))
@@ -212,43 +211,36 @@ def plot_result(results, newssite):
     plt.plot(x,y, 'yo', x, poly1d_fn(x), '--k')
     plt.show()
 
-def generate_results_sabc(keyword: str):
-    results = []
-    use_cache = sys.argv.count("cache") > 0
-    if use_cache:
-        results = json.loads(open(f"results_sabc_{keyword}.json").read())
-    else:
-        results = analyze_sabc_articles(keyword=keyword)
-    return results
-
-def generate_results_rferl(keyword: str):
-    results = []
-    use_cache = sys.argv.count("cache") > 0
-    if use_cache:
-        results = json.loads(open(f"results_rferl_{keyword}.json").read())
-    else:
-        results = analyze_rferl_articles(keyword=keyword)
+def read_cached_results(newssite: str, keyword: str):
+    results = json.loads(open(f"results_sabc_{keyword}.json").read())
     return results
 
 def main():
     keyword = sys.argv[1]
+    cached = sys.argv.count("cache") > 0
 
-    t1 = AnalyzerThread(program=generate_results_sabc, keyword=keyword)
-    t2 = AnalyzerThread(program=generate_results_rferl, keyword=keyword)
+    sabc_articles = []
+    rferl_articles = []
 
-    if sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0:
-        t1.start()
-    if sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0:
-        t2.start()
-    
-    t1.join()
-    t2.join()
-    
-    results_sabc = t1.results
-    results_rferl = t2.results
+    if not cached:    
+        t1 = ScraperThread(program=scrap_articles, newssite="sabc", keyword=keyword)
+        t2 = ScraperThread(program=scrap_articles, newssite="rferl", keyword=keyword)
 
-    print(results_sabc)
-    print(results_rferl)
+        if sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0:
+            t1.start()
+        if sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0:
+            t2.start()
+        
+        t1.join()
+        t2.join()
+        sabc_articles = t1.articles
+        rferl_articles = t2.articles
+    else:
+        rferl_articles = read_cached_results(newssite="sabc", keyword=keyword)
+        rferl_articles = read_cached_results(newssite="rferl", keyword=keyword)
+
+    results_sabc = analyze_articles(sabc_articles, newssite="sabc", keyword=keyword)
+    results_rferl = analyze_articles(rferl_articles, newssite="rferl", keyword=keyword)
 
     plot_result(results=results_sabc, newssite="sabc")
     plot_result(results=results_rferl, newssite="rferl")
