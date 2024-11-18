@@ -10,15 +10,22 @@ Python: 3.10.4
     
 optional arguments:
 
-    - offline
-    - cache
-    - all / <newssite e.g. sabc>
+- offline
+- cache
+- all / <newssite e.g. sabc>
 
 Example: 
 
     python ./sentiment_analyzer.py trees cache sabc
 
-    offline: Will not download any articles
-    cache: When set, no articles will be analyzed but the stored results will be used
-    all: All known newssites articles will be analyzed
-    <newssite>: Just this ONE newssite will ne analyzed
+| Keyword      | Description |
+| ----------- | ----------- |
+| offline      | Will not download any articl       |
+| cache   | When set, no articles will be analyzed but the stored results will be used        |
+| all   | All known newssites articles will be analyzed        |
+| <newssite>   | Just this ONE newssite will ne analyzed        |
+
+offline: Will not download any articles
+cache: When set, no articles will be analyzed but the stored results will be used
+all: All known newssites articles will be analyzed
+<newssite>: Just this ONE newssite will ne analyzed
