@@ -6,7 +6,7 @@ Python: 3.10.4
 
 
 # sentiment_analyzer.py (sentiment analyzer and plotter)
-    `python ./sentiment_analyzer.py <keyword> `
+    ``python ./sentiment_analyzer.py <keyword>``
     
     optional arguments:
         - offline
@@ -16,7 +16,7 @@ Python: 3.10.4
     Example: 
     python ./sentiment_analyzer.py trees cache sabc
 
-    `offline`: Will not download any articles
-    `cache`: When set, no articles will be analyzed but the stored results will be used
-    `all`: All known newssites articles will be analyzed
-    `<newssite>`: Just this ONE newssite will ne analyzed
+    ``offline``: Will not download any articles
+    ``cache``: When set, no articles will be analyzed but the stored results will be used
+    ``all``: All known newssites articles will be analyzed
+    ``<newssite>``: Just this ONE newssite will ne analyzed
