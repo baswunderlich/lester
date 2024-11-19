@@ -213,7 +213,7 @@ def plot_result(results, news_site):
     plt.show()
 
 def read_cached_results(news_site: str, keyword: str):
-    results = json.loads(open(f"results_sabc_{keyword}.json").read())
+    results = json.loads(open(f"results_{news_site}_{keyword}.json").read())
     return results
 
 def main():
