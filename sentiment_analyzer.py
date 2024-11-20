@@ -121,11 +121,7 @@ def clean_text(text) -> str:
             if word in lemma_words:
                 emotion_list.append(emotion)
                 
-<<<<<<< HEAD
-    return emotion_list
-=======
     return " ".join(lemma_words)
->>>>>>> 95ef3ab4ce83635e02a141025f23fc5e2629c1e5
 
 #This function returns a tuple. 
 # [0]: The positive value 
@@ -210,8 +206,8 @@ def plot_result(results, news_site):
     coef2 = np.polyfit(x,y2,1)
     neg_fn = np.poly1d(coef2) 
     plt.plot(x,y1,x,y2)
-    plt.plot(pos_fn(x), color="#0e7800", linestyle="dashed")
-    plt.plot(neg_fn(x), color="#ed1103", linestyle="dashed")
+    plt.plot(pos_fn(x), color="#0e7800", linestyle="dashed") #positive is blue
+    plt.plot(neg_fn(x), color="#ed1103", linestyle="dashed") #negative is red
     plt.show()
 
 
