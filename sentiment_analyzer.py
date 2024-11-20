@@ -96,9 +96,7 @@ def clean_text(text) -> str:
     # Removing Stop Words
     final_words = []
     stop_words = stopwords.words('english')
-    legalStopwords = ["no", "not", 'shouldn', "shouldn't", "nor",
-                    'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 
-                    'wouldn', "wouldn't"]
+    legalStopwords = ["no", "not"]
     stop_words = [stopWord for stopWord in stop_words if stopWord not in legalStopwords]
     # print(stop_words)
     for word in tokenized_words:
@@ -120,7 +118,7 @@ def clean_text(text) -> str:
             if word in lemma_words:
                 emotion_list.append(emotion)
                 
-    return cleaned_text
+    return " ".join(lemma_words)
 
 #This function returns a tuple. 
 # [0]: The positive value 
