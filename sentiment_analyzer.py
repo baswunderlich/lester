@@ -108,15 +108,6 @@ def clean_text(text) -> str:
     for word in final_words:
         word = WordNetLemmatizer().lemmatize(word)
         lemma_words.append(word)
-
-    emotion_list = []
-    with open('emotions.txt', 'r') as file:
-        for line in file:
-            clear_line = line.replace("\n", '').replace(",", '').replace("'", '').strip()
-            word, emotion = clear_line.split(':')
-
-            if word in lemma_words:
-                emotion_list.append(emotion)
                 
     return " ".join(lemma_words)
 
