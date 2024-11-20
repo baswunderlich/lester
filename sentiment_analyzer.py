@@ -12,12 +12,13 @@ import numpy as np
 import newsplease
 from newsplease import NewsPlease, NewsArticle
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import json
 import sys
 import os
 import hashlib
 from threading import Thread
-
+import datetime
 
 keyword = sys.argv[1]
 in_cache_mode = sys.argv.count("cache") > 0
@@ -29,12 +30,21 @@ class ArticleResult:
     negative_result: int
     url: str
     hash_value: str
+    date_published: str
 
-    def __init__(self, positive_result: int, negative_result: int, url: str, hash_value: str):
+    def __init__(self, 
+        positive_result: int,
+        negative_result: int, 
+        url: str, 
+        hash_value: str, 
+        date_published: str):
+
         self.positive_result = positive_result
         self.negative_result = negative_result
         self.url = url
         self.hash_value = hash_value
+        if(len(date_published) >= 10):
+            self.date_published = date_published
 
 # custom thread
 class ScraperThread(Thread):
@@ -103,7 +113,8 @@ def saveResults(results: [[int, int]], news_site: str, keyword: str, article: St
             positive_result=result[0],
             negative_result=result[1],
             url=article.url,
-            hash_value=convert_to_hash(article.url)
+            hash_value=convert_to_hash(article.url),
+            date_published=article.date_publish
             )
         storable_result_objects.append(result_object)
     results_as_json = json.dumps(storable_result_objects, cls=ArticleEncoder)
@@ -209,22 +220,32 @@ def scrap_rferl_articles(keyword: str) -> []:
     return rferl_articles
 
 def plot_result(results, news_site):
-    x = np.array(range(0,len(results)))
+    dateFormat = "%Y-%m-%d %H:%M:%S"
+    publishing_dates = np.vectorize(lambda result: result["date_published"])(results)
+    dates = np.array([datetime.datetime.strptime(d, dateFormat) for d in publishing_dates])
+    x = range(0,len(dates))
+
     #positive
     y1 = np.vectorize(lambda result: result["positive_result"])(results)
     plt.title(f"plotting the sentiment of {news_site}")
     coef1 = np.polyfit(x,y1,10)
     pos_fn = np.poly1d(coef1) 
+
     #negative
-    #The difference between the positive and the negative value
     y2 = np.vectorize(lambda result: result["negative_result"])(results)
     coef2 = np.polyfit(x,y2,10)
     neg_fn = np.poly1d(coef2) 
-    plt.plot(x,y1,x,y2)
-    plt.plot(pos_fn(x), color="#0e7800", linestyle="dashed") #positive is blue
-    plt.plot(neg_fn(x), color="#ed1103", linestyle="dashed") #negative is red
-    plt.show()
 
+
+    fig, ax = plt.subplots()
+    ax.xaxis.set_major_formatter(mdates.DateFormatter(dateFormat))
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.plot(dates,y1,dates,y2)
+    #ax.plot(pos_fn(x), color="#0e7800", linestyle="dashed") #positive is blue
+    #ax.plot(neg_fn(x), color="#ed1103", linestyle="dashed") #negative is red
+    fig.show()
+
+    input()
 
     #The difference between the positive and the negative value
     y = y1 - y2
