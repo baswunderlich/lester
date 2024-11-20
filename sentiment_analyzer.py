@@ -19,6 +19,9 @@ import hashlib
 from threading import Thread
 
 
+in_offline_mode = sys.argv.count("offline") >= 1
+in_rampage_mode = sys.argv.count("rampage") >= 1
+
 # custom thread
 class ScraperThread(Thread):
     def __init__(self, program, news_site, keyword):
@@ -109,7 +112,11 @@ def clean_text(text) -> str:
         word = WordNetLemmatizer().lemmatize(word)
         lemma_words.append(word)
                 
+<<<<<<< HEAD
+    return emotion_list
+=======
     return " ".join(lemma_words)
+>>>>>>> 95ef3ab4ce83635e02a141025f23fc5e2629c1e5
 
 #This function returns a tuple. 
 # [0]: The positive value 
@@ -133,7 +140,7 @@ def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str) 
         cleaned_text = clean_text(text)
         sentiment_result = sentiment_analyse(cleaned_text)
         sentiment_results.append(sentiment_result)
-        print(f"Analyzing... {i}/{len(articles)} ({news_site})")
+        print(f"Analyzing... {i+1}/{len(articles)} ({news_site}) -> {article.url}")
     saveResults(sentiment_results, news_site=news_site, keyword=keyword)
     return sentiment_results
 
@@ -142,14 +149,10 @@ def download_article(link: str, news_site: str) -> StorableArticle:
     saveArticle(article=article, news_site=news_site, link=link)
     return article
 
-def scrap_articles(keyword: str, news_site: str) -> []:
-    filename_article_hrefs = f"articles_{news_site}_{keyword}.txt"
-    if os.path.isfile(filename_article_hrefs):
-        file = open(filename_article_hrefs)
-    else:
-        print(f"No hrefs file was found for: keyword={keyword}, news_site={news_site}\n => {filename_article_hrefs}")
-        return []    
-    lines = file.readlines()
+def scrap_articles(keyword: str, news_site: str) -> []:   
+    article_file = open(f"articles_{news_site}_{keyword}.txt")
+    filename_article_hrefs = f"articles_{news_site}_{keyword}.txt" 
+    lines = article_file.readlines()
     articles = []
     for i, link in enumerate(lines):
         if link == "":
@@ -158,9 +161,13 @@ def scrap_articles(keyword: str, news_site: str) -> []:
         article: NewsArticle
         potential_filename = f"articles_{news_site}/articles_{convert_to_hash(link)}.json" 
         exists_file = os.path.isfile(potential_filename)
-        in_offline_mode = sys.argv.count("offline") >= 1
-        if exists_file:
-            print(f"found {potential_filename} in cache")
+        if exists_file and not in_rampage_mode:
+            if os.path.isfile(filename_article_hrefs):
+                file = open(filename_article_hrefs)
+            else:
+                print(f"No hrefs file was found for: keyword={keyword}, news_site={news_site}\n => {filename_article_hrefs}")
+                return []
+            print(f"found article {link} locally: {potential_filename} ")
             file = open(potential_filename, "r")
             article = json.loads(str(file.read()), object_hook=StorableArticle)
             if article.maintext == "":
@@ -170,7 +177,7 @@ def scrap_articles(keyword: str, news_site: str) -> []:
         if article.maintext == "":
             continue
         articles.append(article)
-        print(f"Scrapping... {i}/{len(lines)} ({news_site})")
+        print(f"Scrapping... {i+1}/{len(lines)} ({news_site}) -> {article.url}")
     return articles
 
 def scrap_sabc_articles(keyword: str) -> []:
