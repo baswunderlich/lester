@@ -19,8 +19,22 @@ import hashlib
 from threading import Thread
 
 
+keyword = sys.argv[1]
+in_cache_mode = sys.argv.count("cache") > 0
 in_offline_mode = sys.argv.count("offline") >= 1
 in_rampage_mode = sys.argv.count("rampage") >= 1
+
+class ArticleResult:
+    positive_result: int
+    negative_result: int
+    url: str
+    hash_value: str
+
+    def __init__(self, positive_result: int, negative_result: int, url: str, has_value: str):
+        self.positive_result = positive_result
+        self.negative_result = negative_result
+        self.url = url
+        self.hash_value = hash_value
 
 # custom thread
 class ScraperThread(Thread):
@@ -81,9 +95,18 @@ def saveArticle(article, news_site, link):
     file = open(filename, "w")
     file.write(article_as_json)
 
-def saveResults(results, news_site, keyword):
+def saveResults(results: [[int, int]], news_site: str, keyword: str, article: StorableArticle):
     file = open(f"results_{news_site}_{keyword}.json", "w")
-    results_as_json = json.dumps(results)
+    storable_result_objects = []
+    for result in results:
+        result_object = ArticleResult(
+            positive_result=result[0],
+            negative_result=result[1],
+            url=article.url,
+            hash_value=hash_value(article.url)
+            )
+        storable_result_objects.append(result_object)
+    results_as_json = json.dumps(storable_result_objects, cls=ArticleEncoder)
     file.write(results_as_json)
 
 def clean_text(text) -> str:
@@ -170,10 +193,11 @@ def scrap_articles(keyword: str, news_site: str) -> []:
                 article = download_article(link=link, news_site=news_site)
         elif not in_offline_mode:
             article = download_article(link=link, news_site=news_site)
-        if article.maintext == "":
-            continue
-        articles.append(article)
-        print(f"Scrapping... {i+1}/{len(lines)} ({news_site}) -> {article.url}")
+        
+        if not article.maintext == "":
+            articles.append(article)
+            print(f"Scrapping... {i+1}/{len(lines)} ({news_site}) -> {article.url}")
+    
     return articles
 
 def scrap_sabc_articles(keyword: str) -> []:
@@ -189,12 +213,12 @@ def plot_result(results, news_site):
     #positive
     y1 = np.array(results).T[0]
     plt.title(f"plotting the sentiment of {news_site}")
-    coef1 = np.polyfit(x,y1,1)
+    coef1 = np.polyfit(x,y1,10)
     pos_fn = np.poly1d(coef1) 
     #negative
     #The difference between the positive and the negative value
     y2 = np.array(results).T[1]
-    coef2 = np.polyfit(x,y2,1)
+    coef2 = np.polyfit(x,y2,10)
     neg_fn = np.poly1d(coef2) 
     plt.plot(x,y1,x,y2)
     plt.plot(pos_fn(x), color="#0e7800", linestyle="dashed") #positive is blue
@@ -204,7 +228,7 @@ def plot_result(results, news_site):
 
     #The difference between the positive and the negative value
     y = np.array(results).T[0] - np.array(results).T[1]
-    coef = np.polyfit(x,y,1)
+    coef = np.polyfit(x,y,10)
     poly1d_fn = np.poly1d(coef) 
     plt.plot(x,y, 'yo', x, poly1d_fn(x), '--k')
     plt.show()
@@ -214,21 +238,18 @@ def read_cached_results(news_site: str, keyword: str):
     return results
 
 def main():
-    keyword = sys.argv[1]
-    cached = sys.argv.count("cache") > 0
-
     sabc_articles = []
     rferl_articles = []
 
     sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
     rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
 
-    threads = [
-        ScraperThread(program=scrap_articles, news_site="sabc", keyword=keyword),
-        ScraperThread(program=scrap_articles, news_site="rferl", keyword=keyword)
-    ]
+    if not in_cache_mode:    
+        threads = [
+            ScraperThread(program=scrap_articles, news_site="sabc", keyword=keyword),
+            ScraperThread(program=scrap_articles, news_site="rferl", keyword=keyword)
+        ]
 
-    if not cached:    
         if sabc_active:
             threads[0].start()
         if rferl_active:
