@@ -96,6 +96,11 @@ def clean_text(text) -> str:
     # Removing Stop Words
     final_words = []
     stop_words = stopwords.words('english')
+    legalStopwords = ["no", "not", 'shouldn', "shouldn't", "nor",
+                    'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 
+                    'wouldn', "wouldn't"]
+    stop_words = [stopWord for stopWord in stop_words if stopWord not in legalStopwords]
+    # print(stop_words)
     for word in tokenized_words:
         if word not in stop_words:
             final_words.append(word)
