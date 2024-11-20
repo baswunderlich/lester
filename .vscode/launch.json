@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["refugees", "rampage", "rferl"]
+            "args": ["refugees", "cache", "all"]
         }
     ]
 }

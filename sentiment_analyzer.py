@@ -30,7 +30,7 @@ class ArticleResult:
     url: str
     hash_value: str
 
-    def __init__(self, positive_result: int, negative_result: int, url: str, has_value: str):
+    def __init__(self, positive_result: int, negative_result: int, url: str, hash_value: str):
         self.positive_result = positive_result
         self.negative_result = negative_result
         self.url = url
@@ -103,7 +103,7 @@ def saveResults(results: [[int, int]], news_site: str, keyword: str, article: St
             positive_result=result[0],
             negative_result=result[1],
             url=article.url,
-            hash_value=hash_value(article.url)
+            hash_value=convert_to_hash(article.url)
             )
         storable_result_objects.append(result_object)
     results_as_json = json.dumps(storable_result_objects, cls=ArticleEncoder)
@@ -160,7 +160,7 @@ def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str) 
         sentiment_result = sentiment_analyse(cleaned_text)
         sentiment_results.append(sentiment_result)
         print(f"Analyzing... {i+1}/{len(articles)} ({news_site}) -> {article.url}")
-    saveResults(sentiment_results, news_site=news_site, keyword=keyword)
+    saveResults(sentiment_results, news_site=news_site, keyword=keyword, article=article)
     return sentiment_results
 
 def download_article(link: str, news_site: str) -> StorableArticle:
@@ -211,13 +211,13 @@ def scrap_rferl_articles(keyword: str) -> []:
 def plot_result(results, news_site):
     x = np.array(range(0,len(results)))
     #positive
-    y1 = np.array(results).T[0]
+    y1 = np.vectorize(lambda result: result["positive_result"])(results)
     plt.title(f"plotting the sentiment of {news_site}")
     coef1 = np.polyfit(x,y1,10)
     pos_fn = np.poly1d(coef1) 
     #negative
     #The difference between the positive and the negative value
-    y2 = np.array(results).T[1]
+    y2 = np.vectorize(lambda result: result["negative_result"])(results)
     coef2 = np.polyfit(x,y2,10)
     neg_fn = np.poly1d(coef2) 
     plt.plot(x,y1,x,y2)
@@ -227,7 +227,7 @@ def plot_result(results, news_site):
 
 
     #The difference between the positive and the negative value
-    y = np.array(results).T[0] - np.array(results).T[1]
+    y = y1 - y2
     coef = np.polyfit(x,y,10)
     poly1d_fn = np.poly1d(coef) 
     plt.plot(x,y, 'yo', x, poly1d_fn(x), '--k')
