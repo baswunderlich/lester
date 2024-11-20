@@ -99,6 +99,9 @@ def clean_text(text) -> str:
     # Removing Stop Words
     final_words = []
     stop_words = stopwords.words('english')
+    legalStopwords = ["no", "not"]
+    stop_words = [stopWord for stopWord in stop_words if stopWord not in legalStopwords]
+    # print(stop_words)
     for word in tokenized_words:
         if word not in stop_words:
             final_words.append(word)
@@ -118,7 +121,11 @@ def clean_text(text) -> str:
             if word in lemma_words:
                 emotion_list.append(emotion)
                 
+<<<<<<< HEAD
     return emotion_list
+=======
+    return " ".join(lemma_words)
+>>>>>>> 95ef3ab4ce83635e02a141025f23fc5e2629c1e5
 
 #This function returns a tuple. 
 # [0]: The positive value 
@@ -216,7 +223,7 @@ def plot_result(results, news_site):
     plt.show()
 
 def read_cached_results(news_site: str, keyword: str):
-    results = json.loads(open(f"results_sabc_{keyword}.json").read())
+    results = json.loads(open(f"results_{news_site}_{keyword}.json").read())
     return results
 
 def main():
