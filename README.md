@@ -20,7 +20,7 @@ optional arguments:
 
 - offline
 - cache
-- all / <newssite e.g. sabc>
+- all / \<newssite e.g. sabc\>
 
 Example: 
 
