@@ -63,6 +63,21 @@ def find_rferl_articles(amount: int = 500, keyword: str = ""):
         file.write(link+"\n")
     file.close()
 
+def getArticleUrlListForPage(newsPage: str, amount: int = 500, keyword: str = ""):
+    if newsPage == "sabc":
+        return get_sabc_article_urls(amount, keyword)
+    elif newsPage == "rferl":
+        return get_rferl_article_urls(amount, keyword)
+    raise ValueError("Invlaid news page entered")
+
+def storeArticlesInFile(newsPage: str, amount: int = 500, keyword: str = ""):
+    links = getArticleUrlListForPage(newsPage)
+
+    file = open(f"articles_{newsPage}_{keyword}.txt", "w")
+    for link in links:
+        file.write(link+"\n")
+    file.close()
+
 
 def main():
     keyword = sys.argv[1]
