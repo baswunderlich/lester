@@ -36,6 +36,15 @@ class ArticleResult:
         self.url = url
         self.hash_value = hash_value
 
+    
+    def to_dict(self):
+        return {
+            "positive_result": self.positive_result,
+            "negative_result": self.negative_result,
+            "url": self.url,
+            "hash_value": self.hash_value
+        }
+
 # custom thread
 class ScraperThread(Thread):
     def __init__(self, program, news_site, keyword):
@@ -44,7 +53,6 @@ class ScraperThread(Thread):
         self.news_site = news_site
         self.keyword = keyword
         Thread.__init__(self)
-
 
     def run(self):
 	    self.articles = self.program(keyword=self.keyword, news_site=self.news_site)
@@ -95,8 +103,7 @@ def saveArticle(article, news_site, link):
     file = open(filename, "w")
     file.write(article_as_json)
 
-def saveResults(results: [[int, int]], news_site: str, keyword: str, article: StorableArticle):
-    file = open(f"results_{news_site}_{keyword}.json", "w")
+def to_storable_results(results: [[int, int]], news_site: str, keyword: str, article: StorableArticle):
     storable_result_objects = []
     for result in results:
         result_object = ArticleResult(
@@ -106,6 +113,10 @@ def saveResults(results: [[int, int]], news_site: str, keyword: str, article: St
             hash_value=convert_to_hash(article.url)
             )
         storable_result_objects.append(result_object)
+    return storable_result_objects
+
+def save_result(storable_result_objects: ArticleResult, news_site: str, keyword: str):
+    file = open(f"results_{news_site}_{keyword}.json", "w")
     results_as_json = json.dumps(storable_result_objects, cls=ArticleEncoder)
     file.write(results_as_json)
 
@@ -124,7 +135,6 @@ def clean_text(text) -> str:
     stop_words = stopwords.words('english')
     legalStopwords = ["no", "not"]
     stop_words = [stopWord for stopWord in stop_words if stopWord not in legalStopwords]
-    # print(stop_words)
     for word in tokenized_words:
         if word not in stop_words:
             final_words.append(word)
@@ -150,7 +160,7 @@ def sentiment_analyse(sentiment_text) -> [int]:
 #This function returns a list of tuples. Every tuple contains the following:
 # [0]: The positive value 
 # [1]: The negative value.
-def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str) -> [[int]]:
+def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str):
     sentiment_results = []
     for i, article in enumerate(articles):
         text = ""
@@ -160,8 +170,9 @@ def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str) 
         sentiment_result = sentiment_analyse(cleaned_text)
         sentiment_results.append(sentiment_result)
         print(f"Analyzing... {i+1}/{len(articles)} ({news_site}) -> {article.url}")
-    saveResults(sentiment_results, news_site=news_site, keyword=keyword, article=article)
-    return sentiment_results
+    storable_results = to_storable_results(results=sentiment_results, news_site=news_site, keyword=keyword, article=article)
+    save_result(storable_result_objects=storable_results, news_site=news_site, keyword=keyword)
+    return [s.to_dict() for s in storable_results]
 
 def download_article(link: str, news_site: str) -> StorableArticle:
     article = StorableArticle(NewsPlease.from_url(link))
@@ -200,14 +211,6 @@ def scrap_articles(keyword: str, news_site: str) -> []:
     
     return articles
 
-def scrap_sabc_articles(keyword: str) -> []:
-    sabc_articles = scrap_articles(keyword=keyword, news_site="sabc")
-    return sabc_articles
-
-def scrap_rferl_articles(keyword: str) -> []:
-    rferl_articles = scrap_articles(keyword=keyword, news_site="rferl")
-    return rferl_articles
-
 def plot_result(results, news_site):
     x = np.array(range(0,len(results)))
     #positive
@@ -240,20 +243,25 @@ def read_cached_results(news_site: str, keyword: str):
 def main():
     sabc_articles = []
     rferl_articles = []
+    chinadaily_articles = []
 
     sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
     rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
+    chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
 
     if not in_cache_mode:    
         threads = [
             ScraperThread(program=scrap_articles, news_site="sabc", keyword=keyword),
-            ScraperThread(program=scrap_articles, news_site="rferl", keyword=keyword)
+            ScraperThread(program=scrap_articles, news_site="rferl", keyword=keyword),
+            ScraperThread(program=scrap_articles, news_site="chinadaily", keyword=keyword)
         ]
 
         if sabc_active:
             threads[0].start()
         if rferl_active:
             threads[1].start()
+        if chinadaily_active:
+            threads[2].start()
         
         for t in threads:
             if t.is_alive():
@@ -261,21 +269,28 @@ def main():
 
         sabc_articles = threads[0].articles
         rferl_articles = threads[1].articles
+        chinadaily_articles = threads[2].articles
 
         if sabc_active:
             results_sabc = analyze_articles(sabc_articles, news_site="sabc", keyword=keyword)
         if rferl_active:
             results_rferl = analyze_articles(rferl_articles, news_site="rferl", keyword=keyword)
+        if chinadaily_active:
+            results_chinadaily = analyze_articles(chinadaily_articles, news_site="chinadaily", keyword=keyword)
     else:
         if sabc_active:
             results_sabc = read_cached_results(news_site="sabc", keyword=keyword)
         if rferl_active:
             results_rferl = read_cached_results(news_site="rferl", keyword=keyword)
+        if chinadaily_active:
+            results_chinadaily = read_cached_results(news_site="chinadaily", keyword=keyword)
 
     if sabc_active:
         plot_result(results=results_sabc, news_site="sabc")
     if rferl_active:
         plot_result(results=results_rferl, news_site="rferl")
+    if chinadaily_active:
+        plot_result(results=results_chinadaily, news_site="chinadaily")
 
 if __name__=="__main__":
     main()

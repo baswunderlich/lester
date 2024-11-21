@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import sys
 import threading
+import json
 
 def get_sabc_article_urls(limit: int, keyword: str) -> []:
     article_urls = []
@@ -47,6 +48,25 @@ def get_rferl_article_urls(limit: int, keyword: str):
                     return article_urls
         pageindex += 1
 
+def get_chinadaily_article_urls(limit: int, keyword: str):
+    article_urls = []
+    #Chinadaily starts with the pageIndex 0
+    pageindex = 0
+
+    while len(article_urls) < limit:
+        url = f"https://newssearch.chinadaily.com.cn/rest/en/search?keywords={keyword}&sort=dp&page={pageindex}&curType=story&type=&channel=&source="
+        page = requests.get(url)
+        page_decoded = json.loads(page.text)
+
+        for article in page_decoded["content"]:
+            href = article["url"]
+            if article_urls.count(href) == 0:
+                article_urls.append(href)
+                print(f"{len(article_urls)}/{limit}")
+            if len(article_urls) >= limit:
+                return article_urls
+        pageindex += 1
+
 def find_sabc_articles(amount: int = 500, keyword: str = ""):
     links = get_sabc_article_urls(amount, keyword=keyword)
 
@@ -63,17 +83,26 @@ def find_rferl_articles(amount: int = 500, keyword: str = ""):
         file.write(link+"\n")
     file.close()
 
+def find_chinadaily_articles(amount: int = 500, keyword: str = ""):
+    links = get_chinadaily_article_urls(amount, keyword=keyword)
+
+    file = open(f"articles_chinadaily_{keyword}.txt", "w")
+    for link in links:
+        file.write(link+"\n")
+    file.close()
 
 def main():
     keyword = sys.argv[1]
     amount = int(sys.argv[2])
     print(f"Looking for articles with the keyword \"{keyword}\"")
 
-    t1 = threading.Thread(group=None, target=find_sabc_articles, args=(amount, keyword,))
-    t2 = threading.Thread(group=None, target=find_rferl_articles, args=(amount, keyword,))
+    # t1 = threading.Thread(group=None, target=find_sabc_articles, args=(amount, keyword,))
+    # t2 = threading.Thread(group=None, target=find_rferl_articles, args=(amount, keyword,))
+    t3 = threading.Thread(group=None, target=find_chinadaily_articles, args=(amount, keyword,))
 
-    t1.start()
-    t2.start()
+    # t1.start()
+    # t2.start()
+    t3.start()
     
 if __name__=="__main__":
     main()
