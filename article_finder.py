@@ -67,41 +67,35 @@ def get_chinadaily_article_urls(limit: int, keyword: str):
                 return article_urls
         pageindex += 1
 
-def find_sabc_articles(amount: int = 500, keyword: str = ""):
-    links = get_sabc_article_urls(amount, keyword=keyword)
+def getArticleUrlListForPage(newsPage: str, amount: int = 500, keyword: str = ""):
+    if newsPage == "sabc":
+        return get_sabc_article_urls(amount, keyword)
+    elif newsPage == "rferl":
+        return get_rferl_article_urls(amount, keyword)
+    elif newsPage == "chinadaily":
+        return get_chinadaily_article_urls(amount, keyword)
+    raise ValueError("Invlaid news page entered")
 
-    file = open(f"articles_sabc_{keyword}.txt", "w")
+def storeArticlesInFile(newsPage: str, amount: int = 500, keyword: str = ""):
+    links = getArticleUrlListForPage(newsPage, amount, keyword)
+
+    file = open(f"articles_{newsPage}_{keyword}.txt", "w")
     for link in links:
         file.write(link+"\n")
     file.close()
 
-def find_rferl_articles(amount: int = 500, keyword: str = ""):
-    links = get_rferl_article_urls(amount, keyword=keyword)
-
-    file = open(f"articles_rferl_{keyword}.txt", "w")
-    for link in links:
-        file.write(link+"\n")
-    file.close()
-
-def find_chinadaily_articles(amount: int = 500, keyword: str = ""):
-    links = get_chinadaily_article_urls(amount, keyword=keyword)
-
-    file = open(f"articles_chinadaily_{keyword}.txt", "w")
-    for link in links:
-        file.write(link+"\n")
-    file.close()
 
 def main():
     keyword = sys.argv[1]
     amount = int(sys.argv[2])
     print(f"Looking for articles with the keyword \"{keyword}\"")
 
-    # t1 = threading.Thread(group=None, target=find_sabc_articles, args=(amount, keyword,))
-    # t2 = threading.Thread(group=None, target=find_rferl_articles, args=(amount, keyword,))
-    t3 = threading.Thread(group=None, target=find_chinadaily_articles, args=(amount, keyword,))
+    t1 = threading.Thread(group=None, target=storeArticlesInFile, args=("sabc", amount, keyword,))
+    t2 = threading.Thread(group=None, target=storeArticlesInFile, args=("rferl", amount, keyword,))
+    t3 = threading.Thread(group=None, target=storeArticlesInFile, args=("chinadaily", amount, keyword,))
 
-    # t1.start()
-    # t2.start()
+    t1.start()
+    t2.start()
     t3.start()
     
 if __name__=="__main__":
