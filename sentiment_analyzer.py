@@ -103,19 +103,16 @@ def saveArticle(article, news_site, link):
     file = open(filename, "w")
     file.write(article_as_json)
 
-def to_storable_results(results: [[int, int]], news_site: str, keyword: str, article: StorableArticle):
-    storable_result_objects = []
-    for result in results:
-        result_object = ArticleResult(
-            positive_result=result[0],
-            negative_result=result[1],
-            url=article.url,
-            hash_value=convert_to_hash(article.url)
-            )
-        storable_result_objects.append(result_object)
-    return storable_result_objects
+def to_storable_result(result: [int, int], news_site: str, keyword: str, article: StorableArticle):
+    result_object = ArticleResult(
+        positive_result=result[0],
+        negative_result=result[1],
+        url=article.url,
+        hash_value=convert_to_hash(article.url)
+        )
+    return result_object
 
-def save_result(storable_result_objects: ArticleResult, news_site: str, keyword: str):
+def save_results(storable_result_objects: ArticleResult, news_site: str, keyword: str):
     file = open(f"results_{news_site}_{keyword}.json", "w")
     results_as_json = json.dumps(storable_result_objects, cls=ArticleEncoder)
     file.write(results_as_json)
@@ -162,16 +159,25 @@ def sentiment_analyse(sentiment_text) -> [int]:
 # [1]: The negative value.
 def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str):
     sentiment_results = []
+    storable_results = []
     for i, article in enumerate(articles):
+        print(f"Analyzing... {i+1}/{len(articles)} ({news_site}) -> {article.url}")
         text = ""
         if hasattr(article, "maintext"):
             text = article.maintext
         cleaned_text = clean_text(text)
         sentiment_result = sentiment_analyse(cleaned_text)
         sentiment_results.append(sentiment_result)
-        print(f"Analyzing... {i+1}/{len(articles)} ({news_site}) -> {article.url}")
-    storable_results = to_storable_results(results=sentiment_results, news_site=news_site, keyword=keyword, article=article)
-    save_result(storable_result_objects=storable_results, news_site=news_site, keyword=keyword)
+        storable_result = to_storable_result(
+            result=sentiment_result, 
+            news_site=news_site, 
+            keyword=keyword, 
+            article=article)
+        storable_results.append(storable_result)
+    save_results(
+        storable_result_objects=storable_results,
+        news_site=news_site,
+        keyword=keyword)
     return [s.to_dict() for s in storable_results]
 
 def download_article(link: str, news_site: str) -> StorableArticle:
