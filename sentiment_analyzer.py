@@ -24,6 +24,10 @@ in_cache_mode = sys.argv.count("cache") > 0
 in_offline_mode = sys.argv.count("offline") >= 1
 in_rampage_mode = sys.argv.count("rampage") >= 1
 
+sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
+rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
+chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
+
 class ArticleResult:
     positive_result: int
     negative_result: int
@@ -250,10 +254,6 @@ def main():
     sabc_articles = []
     rferl_articles = []
     chinadaily_articles = []
-
-    sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
-    rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
-    chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
 
     if not in_cache_mode:    
         threads = [
