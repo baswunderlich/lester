@@ -306,4 +306,5 @@ def main():
         plot_result(results=results_rferl, news_site="rferl")
 
 if __name__=="__main__":
+    setupNltk()
     main()
