@@ -4,6 +4,7 @@ import string
 from collections import Counter
 from matplotlib.pyplot import figure
 import matplotlib.pyplot as plt
+import nltk
 from nltk.corpus import stopwords
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.stem import WordNetLemmatizer
@@ -257,6 +258,12 @@ def plot_result(results, news_site):
 def read_cached_results(news_site: str, keyword: str):
     results = json.loads(open(f"results_{news_site}_{keyword}.json").read())
     return results
+
+def setupNltk():
+    nltk.download('punkt_tab')
+    nltk.download('stopwords')
+    nltk.download('wordnet')
+    nltk.download('vader_lexicon')
 
 def main():
     sabc_articles = []
