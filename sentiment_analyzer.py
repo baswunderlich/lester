@@ -173,7 +173,7 @@ def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str) 
         sentiment_results.append(sentiment_result)
         print(f"Analyzing... {i+1}/{len(articles)} ({news_site}) -> {article.url}")
     saveResults(sentiment_results, news_site=news_site, keyword=keyword, article=article)
-    return sentiment_results
+    return read_cached_results(news_site= news_site, keyword= keyword)
 
 def download_article(link: str, news_site: str) -> StorableArticle:
     article = StorableArticle(NewsPlease.from_url(link))
