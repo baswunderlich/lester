@@ -105,16 +105,16 @@ def saveArticle(article, news_site, link):
     file = open(filename, "w")
     file.write(article_as_json)
 
-def saveResults(results: [[int, int]], news_site: str, keyword: str, article: StorableArticle):
+def saveResults(results: [[int, int]], news_site: str, keyword: str, articles: [StorableArticle]):
     file = open(f"results_{news_site}_{keyword}.json", "w")
     storable_result_objects = []
-    for result in results:
+    for index, result in enumerate(results):
         result_object = ArticleResult(
             positive_result=result[0],
             negative_result=result[1],
-            url=article.url,
-            hash_value=convert_to_hash(article.url),
-            date_published=article.date_publish
+            url=articles[index].url,
+            hash_value=convert_to_hash(articles[index].url),
+            date_published=articles[index].date_publish
             )
         storable_result_objects.append(result_object)
     results_as_json = json.dumps(storable_result_objects, cls=ArticleEncoder)
@@ -171,7 +171,7 @@ def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str) 
         sentiment_result = sentiment_analyse(cleaned_text)
         sentiment_results.append(sentiment_result)
         print(f"Analyzing... {i+1}/{len(articles)} ({news_site}) -> {article.url}")
-    saveResults(sentiment_results, news_site=news_site, keyword=keyword, article=article)
+    saveResults(sentiment_results, news_site=news_site, keyword=keyword, articles=articles)
     return read_cached_results(news_site= news_site, keyword= keyword)
 
 def download_article(link: str, news_site: str) -> StorableArticle:
