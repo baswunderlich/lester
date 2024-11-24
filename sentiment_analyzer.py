@@ -93,8 +93,7 @@ class ArticleDecoder(json.JSONDecoder):
 def convert_to_hash(link: str) -> str:
     return hashlib.sha256(bytes(link, "utf-8")).hexdigest()
 
-def convert_to_storable_article(
-    old_article) -> StorableArticle:
+def convert_to_storable_article(old_article) -> StorableArticle:
     return StorableArticle(old_article)
 
 def saveArticle(article, news_site, link):
