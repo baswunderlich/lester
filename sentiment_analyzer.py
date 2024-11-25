@@ -18,7 +18,7 @@ import os
 import hashlib
 from threading import Thread
 from SentimentVisualizer import plot_result
-import datetimefrom 
+import datetime 
 
 
 keyword = sys.argv[1]
@@ -122,7 +122,8 @@ def to_storable_result(result: [int, int], news_site: str, keyword: str, article
         positive_result=result[0],
         negative_result=result[1],
         url=article.url,
-        hash_value=convert_to_hash(article.url)
+        hash_value=convert_to_hash(article.url),
+        date_published=article.date_publish
         )
     return result_object
 
