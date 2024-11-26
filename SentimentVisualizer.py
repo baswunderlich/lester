@@ -25,6 +25,9 @@ def plot_result(results, news_site):
     diff_coef = np.polyfit(x, sentiment_diff, 10)
     diff_fn = np.poly1d(diff_coef)
     diff_dates = dates  # Dates for the second plot remain the same
+
+    max_ticks = 10  # Maximum number of ticks to display
+    step = max(1, len(dates) // max_ticks)
     
     # Set up the figure with two subplots
     fig, axs = plt.subplots(2, 1, figsize=(11, 8))
@@ -36,8 +39,10 @@ def plot_result(results, news_site):
     axs[0].set_ylabel("Sentiment Score", fontsize=12)
     axs[0].legend()
     axs[0].grid(True)
+    
     axs[0].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-    axs[0].xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    # axs[0].xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    axs[0].xaxis.set_major_locator(mdates.DayLocator(interval=step))
     axs[0].tick_params(axis="x", rotation=45)
     
     # Plot Sentiment Difference
@@ -49,7 +54,8 @@ def plot_result(results, news_site):
     axs[1].legend()
     axs[1].grid(True)
     axs[1].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-    axs[1].xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    # axs[1].xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    axs[1].xaxis.set_major_locator(mdates.DayLocator(interval=step))
     axs[1].tick_params(axis="x", rotation=45)
     
     # Adjust layout
