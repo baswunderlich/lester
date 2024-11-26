@@ -232,6 +232,9 @@ def scrap_articles(keyword: str, news_site: str) -> []:
                 article = download_article(link=link, news_site=news_site)
         elif not in_offline_mode:
             article = download_article(link=link, news_site=news_site)
+        else:
+            print(f"There is an article missing: {link}")
+            continue
         
         if not article.maintext == "":
             articles.append(article)
