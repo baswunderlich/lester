@@ -7,7 +7,10 @@ def plot_result(results, news_site):
     dateFormat = "%Y-%m-%d %H:%M:%S"
 
     # Extract and process dates
-    publishing_dates = np.vectorize(lambda result: result["date_published"])(results)
+    filtered_results = [result for result in results if "date_published" in result and result["date_published"] is not None]
+    publishing_dates = np.vectorize(lambda result: result["date_published"])(filtered_results)
+    if not filtered_results:
+        print("no reulsts :(")
     dates = np.array([datetime.datetime.strptime(d, dateFormat) for d in publishing_dates])
     
     # Sort data by dates
@@ -15,8 +18,8 @@ def plot_result(results, news_site):
     dates = dates[sorted_indices]
     
     # Extract sentiment scores and sort them
-    positive_scores = np.vectorize(lambda result: result["positive_result"])(results)
-    negative_scores = np.vectorize(lambda result: result["negative_result"])(results)
+    positive_scores = np.vectorize(lambda result: result["positive_result"])(filtered_results)
+    negative_scores = np.vectorize(lambda result: result["negative_result"])(filtered_results)
     positive_scores = positive_scores[sorted_indices]
     negative_scores = negative_scores[sorted_indices]
     
