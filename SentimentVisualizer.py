@@ -29,8 +29,7 @@ def plot_result(results, news_site):
     diff_fn = np.poly1d(diff_coef)
     diff_dates = dates  # Dates for the second plot remain the same
 
-    max_ticks = 10  # Maximum number of ticks to display
-    step = max(1, len(dates) // max_ticks)
+    step = 30
     
     # Set up the figure with two subplots
     fig, axs = plt.subplots(2, 1, figsize=(11, 8))
