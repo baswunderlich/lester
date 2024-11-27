@@ -12,8 +12,10 @@ import json
 import sys
 import os
 import hashlib
-from threading import Thread
 from SentimentVisualizer import plot_result
+from article_result import ArticleResult
+from storable_article import StorableArticle
+from scraper_thread import ScraperThread
 
 keyword = sys.argv[1]
 in_cache_mode = sys.argv.count("cache") > 0
@@ -23,70 +25,6 @@ in_rampage_mode = sys.argv.count("rampage") >= 1
 sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
 rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
 chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
-
-class ArticleResult:
-    positive_result: int
-    negative_result: int
-    url: str
-    hash_value: str
-    date_published: str
-
-    def __init__(self, 
-        positive_result: int,
-        negative_result: int, 
-        url: str, 
-        hash_value: str, 
-        date_published: str):
-
-        self.positive_result = positive_result
-        self.negative_result = negative_result
-        self.url = url
-        self.hash_value = hash_value
-        if(len(date_published) >= 10):
-            self.date_published = date_published
-
-    
-    def to_dict(self):
-        return {
-            "positive_result": self.positive_result,
-            "negative_result": self.negative_result,
-            "url": self.url,
-            "hash_value": self.hash_value
-        }
-
-# custom thread
-class ScraperThread(Thread):
-    def __init__(self, program, news_site, keyword):
-        self.program = program
-        self.articles = []
-        self.news_site = news_site
-        self.keyword = keyword
-        Thread.__init__(self)
-
-    def run(self):
-	    self.articles = self.program(keyword=self.keyword, news_site=self.news_site)
-
-#necessary due to the fact, that NewsArticle can not be serialized as json
-class StorableArticle:
-    maintext: str = ""
-    source_domain: str = ""
-    title: str = ""
-    url: str = ""
-    description: str = ""
-    date_publish: str = ""
-    date_download: str = ""
-
-    def __init__(self, old_article):
-        if isinstance(old_article, dict):
-            self.__dict__.update(old_article)
-        else:
-            self.maintext = old_article.maintext
-            self.source_domain = old_article.source_domain
-            self.title = old_article.title
-            self.url = old_article.url
-            self.description = old_article.description
-            self.date_publish = str(old_article.date_publish)
-            self.date_download = str(old_article.date_download)
 
 class ArticleEncoder(json.JSONEncoder):
         def default(self, o):
