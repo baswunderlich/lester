@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import datetime
 import matplotlib.dates as mdates
+from datetime import timedelta
 
 def plot_result(results, news_site):
     dateFormat = "%Y-%m-%d %H:%M:%S"
@@ -37,7 +38,7 @@ def plot_result(results, news_site):
     # Plot Positive and Negative Sentiments
     axs[0].plot(dates, positive_scores, label="Positive Sentiment", color="#0e7800", marker='o')
     axs[0].plot(dates, negative_scores, label="Negative Sentiment", color="#ed1103", marker='x')
-    axs[0].set_title(f"Sentiment Analysis for {news_site}", fontsize=14)
+    axs[0].set_title(f"Sentiment Analysis for {news_site} ({len(filtered_results)} articles)", fontsize=14)
     axs[0].set_ylabel("Sentiment Score", fontsize=12)
     axs[0].legend()
     axs[0].grid(True)
@@ -46,6 +47,7 @@ def plot_result(results, news_site):
     # axs[0].xaxis.set_major_locator(mdates.DayLocator(interval=2))
     axs[0].xaxis.set_major_locator(mdates.DayLocator(interval=step))
     axs[0].tick_params(axis="x", rotation=45)
+    axs[0].set_xlim(dates[0] - timedelta(days=3), dates[-1])  # Set x-axis limits
     
     # Plot Sentiment Difference
     axs[1].plot(diff_dates, sentiment_diff, label="Sentiment Difference", color="orange", marker='s')
@@ -59,6 +61,7 @@ def plot_result(results, news_site):
     # axs[1].xaxis.set_major_locator(mdates.DayLocator(interval=2))
     axs[1].xaxis.set_major_locator(mdates.DayLocator(interval=step))
     axs[1].tick_params(axis="x", rotation=45)
+    axs[1].set_xlim(dates[0] - timedelta(days=3), dates[-1])  # Set x-axis limits
     
     # Adjust layout
     plt.tight_layout()
