@@ -1,25 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import string
-from collections import Counter
 from matplotlib.pyplot import figure
 import nltk
 from nltk.corpus import stopwords
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-import newsplease
 from newsplease import NewsPlease, NewsArticle
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import json
 import sys
 import os
 import hashlib
 from threading import Thread
 from SentimentVisualizer import plot_result
-import datetime 
-
 
 keyword = sys.argv[1]
 in_cache_mode = sys.argv.count("cache") > 0
