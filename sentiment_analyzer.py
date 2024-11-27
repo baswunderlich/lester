@@ -236,14 +236,6 @@ def scrap_articles(keyword: str, news_site: str) -> []:
     
     return articles
 
-def scrap_sabc_articles(keyword: str) -> []:
-    sabc_articles = scrap_articles(keyword=keyword, news_site="sabc")
-    return sabc_articles
-
-def scrap_rferl_articles(keyword: str) -> []:
-    rferl_articles = scrap_articles(keyword=keyword, news_site="rferl")
-    return rferl_articles
-
 def read_cached_results(news_site: str, keyword: str):
     results = json.loads(open(f"results_{news_site}_{keyword}.json").read())
     return results
