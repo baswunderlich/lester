@@ -29,6 +29,8 @@ in_rampage_mode = sys.argv.count("rampage") >= 1
 sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
 rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
 chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
+secrets_file = open("secrets.json", "r")
+
 
 class ArticleResult:
     positive_result: int
@@ -108,7 +110,7 @@ def convert_to_hash(link: str) -> str:
 def convert_to_storable_article(old_article) -> StorableArticle:
     return StorableArticle(old_article)
 
-def saveArticle(article, news_site, link):
+def save_article(article, news_site, link):
     storable_article = convert_to_storable_article(article)
     article_as_json = json.dumps(storable_article, cls=ArticleEncoder)
     if not os.path.isdir(f"articles_{news_site}"):
@@ -127,7 +129,7 @@ def to_storable_result(result: [int, int], news_site: str, keyword: str, article
         )
     return result_object
 
-def saveResults(results: [[int, int]], news_site: str, keyword: str, articles: [StorableArticle]):
+def save_results(results: [[int, int]], news_site: str, keyword: str, articles: [StorableArticle]):
     file = open(f"results_{news_site}_{keyword}.json", "w")
     storable_result_objects = []
     for index, result in enumerate(results):
@@ -199,12 +201,12 @@ def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str):
             keyword=keyword, 
             article=article)
         storable_results.append(storable_result)
-    saveResults(sentiment_results, news_site=news_site, keyword=keyword, articles=articles)
+    save_results(sentiment_results, news_site=news_site, keyword=keyword, articles=articles)
     return read_cached_results(news_site= news_site, keyword= keyword)
 
 def download_article(link: str, news_site: str) -> StorableArticle:
     article = StorableArticle(NewsPlease.from_url(link))
-    saveArticle(article=article, news_site=news_site, link=link)
+    save_article(article=article, news_site=news_site, link=link)
     return article
 
 def scrap_articles(keyword: str, news_site: str) -> []:   
@@ -253,6 +255,10 @@ def scrap_rferl_articles(keyword: str) -> []:
 def read_cached_results(news_site: str, keyword: str):
     results = json.loads(open(f"results_{news_site}_{keyword}.json").read())
     return results
+
+def get_secret(name: str) -> str:
+    secrets = json.loads(secrets_file.read())
+    return secrets[name]
 
 def setupNltk():
     nltk.download('punkt_tab')
