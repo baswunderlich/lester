@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import sys
 import threading
 import json
+import os 
 
 def get_spiegel_article_urls(limit: int, keyword: str) -> []:
     article_urls = []
@@ -111,13 +112,16 @@ def get_article_url_list_for_page(newsPage: str, amount: int = 500, keyword: str
 def store_articles_in_file(newsPage: str, amount: int = 500, keyword: str = ""):
     links = get_article_url_list_for_page(newsPage, amount, keyword)
 
-    file = open(f"articles_{newsPage}_{keyword}.txt", "w")
+    file = open(f"data/articles_{newsPage}_{keyword}.txt", "w")
     for link in links:
         file.write(link+"\n")
     file.close()
 
 
 def main():
+    if not os.path.isdir(f"data"):
+        os.mkdir(f"data")
+
     keyword = sys.argv[1]
     amount = int(sys.argv[2])
     print(f"Looking for articles with the keyword \"{keyword}\"")

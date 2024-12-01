@@ -12,7 +12,7 @@ import json
 import sys
 import os
 import hashlib
-from SentimentVisualizer import plot_result
+from SentimentVisualizer import plot_result, show_plots
 from article_result import ArticleResult
 from storable_article import StorableArticle
 from scraper_thread import ScraperThread
@@ -265,7 +265,8 @@ def main():
         plot_result(results=results_moscowtimes, news_site="moscowtimes")
     if spiegel_active:
         plot_result(results=results_spiegel, news_site="spiegel")
-        
+    show_plots()
+
 if __name__=="__main__":
     setupNltk()
     main()

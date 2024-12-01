@@ -4,6 +4,8 @@ import datetime
 import matplotlib.dates as mdates
 from datetime import timedelta
 
+global_fig, global_axs = plt.subplots(1, 1, figsize=(11, 5))
+
 def plot_result(results, news_site):
     dateFormat = "%Y-%m-%d %H:%M:%S"
 
@@ -42,10 +44,8 @@ def plot_result(results, news_site):
     axs[0].set_ylabel("Sentiment Score", fontsize=12)
     axs[0].legend()
     axs[0].grid(True)
-    
     axs[0].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-    # axs[0].xaxis.set_major_locator(mdates.DayLocator(interval=2))
-    axs[0].xaxis.set_major_locator(mdates.DayLocator(interval=step))
+    axs[0].xaxis.set_major_locator(mdates.MonthLocator(interval=step))
     axs[0].tick_params(axis="x", rotation=45)
     axs[0].set_xlim(dates[0] - timedelta(days=3), dates[-1])  # Set x-axis limits
     
@@ -58,11 +58,16 @@ def plot_result(results, news_site):
     axs[1].legend()
     axs[1].grid(True)
     axs[1].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-    # axs[1].xaxis.set_major_locator(mdates.DayLocator(interval=2))
-    axs[1].xaxis.set_major_locator(mdates.DayLocator(interval=step))
+    axs[1].xaxis.set_major_locator(mdates.MonthLocator(interval=step))
     axs[1].tick_params(axis="x", rotation=45)
     axs[1].set_xlim(dates[0] - timedelta(days=3), dates[-1])  # Set x-axis limits
     
+
+    global_axs.plot(dates, diff_fn(x), label=news_site)
     # Adjust layout
     plt.tight_layout()
+
+
+def show_plots():
+    global_axs.legend()
     plt.show()
