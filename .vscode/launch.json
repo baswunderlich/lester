@@ -2,12 +2,28 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: Sentiment Moscowtimes",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["refugees", "moscowtimes"]
+        },
+        {
+            "name": "Python Debugger: Sentiment Spiegel",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["refugees", "spiegel"]
+        },
+        {
             "name": "Python Debugger: Sentiment",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["refugees", "chinadaily", "offline"]
+            "args": ["refugees", "spiegel", "offline"]
         },
         {
             "name": "Python Debugger: Article finder",
