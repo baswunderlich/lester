@@ -25,6 +25,7 @@ in_rampage_mode = sys.argv.count("rampage") >= 1
 sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
 rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
 chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
+spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
 
 class ArticleEncoder(json.JSONEncoder):
         def default(self, o):
@@ -188,12 +189,20 @@ def main():
     sabc_articles = []
     rferl_articles = []
     chinadaily_articles = []
+    spiegel_articles = []
+
+    results_sabc = []
+    results_rferl = []
+    results_chinadaily = []
+    results_spiegel = []
+
 
     if not in_cache_mode:    
         threads = [
             ScraperThread(program=scrap_articles, news_site="sabc", keyword=keyword),
             ScraperThread(program=scrap_articles, news_site="rferl", keyword=keyword),
-            ScraperThread(program=scrap_articles, news_site="chinadaily", keyword=keyword)
+            ScraperThread(program=scrap_articles, news_site="chinadaily", keyword=keyword),
+            ScraperThread(program=scrap_articles, news_site="spiegel", keyword=keyword)
         ]
 
         if sabc_active:
@@ -202,6 +211,8 @@ def main():
             threads[1].start()
         if chinadaily_active:
             threads[2].start()
+        if spiegel_active:
+            threads[3].start()
         
         for t in threads:
             if t.is_alive():
@@ -210,6 +221,7 @@ def main():
         sabc_articles = threads[0].articles
         rferl_articles = threads[1].articles
         chinadaily_articles = threads[2].articles
+        spiegel_articles = threads[3].articles
 
         if sabc_active:
             results_sabc = analyze_articles(sabc_articles, news_site="sabc", keyword=keyword)
@@ -217,6 +229,8 @@ def main():
             results_rferl = analyze_articles(rferl_articles, news_site="rferl", keyword=keyword)
         if chinadaily_active:
             results_chinadaily = analyze_articles(chinadaily_articles, news_site="chinadaily", keyword=keyword)
+        if spiegel_active:
+            results_spiegel = analyze_articles(spiegel_articles, news_site="spiegel", keyword=keyword)
     else:
         if sabc_active:
             results_sabc = read_cached_results(news_site="sabc", keyword=keyword)
@@ -224,6 +238,8 @@ def main():
             results_rferl = read_cached_results(news_site="rferl", keyword=keyword)
         if chinadaily_active:
             results_chinadaily = read_cached_results(news_site="chinadaily", keyword=keyword)
+        if spiegel_active:
+            results_spiegel = read_cached_results(news_site="spiegel", keyword=keyword)
 
     if sabc_active:
         plot_result(results=results_sabc, news_site="sabc")
@@ -231,6 +247,8 @@ def main():
         plot_result(results=results_rferl, news_site="rferl")
     if chinadaily_active:
         plot_result(results=results_chinadaily, news_site="chinadaily")
+    if spiegel_active:
+        plot_result(results=results_spiegel, news_site="spiegel")
 
 if __name__=="__main__":
     setupNltk()
