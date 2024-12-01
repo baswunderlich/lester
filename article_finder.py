@@ -4,6 +4,23 @@ import sys
 import threading
 import json
 
+def get_spiegel_article_urls(limit: int, keyword: str) -> []:
+    article_urls = []
+    page_index = 2
+
+    while True:
+        url = f"https://www.spiegel.de/services/sitesearch/search?segments=spon_international&q={keyword}&after=-2208988800&before=1733078189&page_size=20&page={page_index}"
+        response = json.loads(requests.get(url).text)
+        results = response["results"]
+
+        for r in results:
+            href = r["url"]
+            if article_urls.count(href) == 0:
+                article_urls.append(href)
+                print(f"{len(article_urls)}/{limit}")
+            if len(article_urls) >= limit:
+                return article_urls
+        page_index += 1
 
 def get_moscowtimes_article_urls(limit: int, keyword: str) -> []:
     article_urls = []
@@ -87,7 +104,9 @@ def get_article_url_list_for_page(newsPage: str, amount: int = 500, keyword: str
         return get_chinadaily_article_urls(amount, keyword)
     elif newsPage == "moscowtimes":
         return get_moscowtimes_article_urls(amount, keyword)
-    raise ValueError("Invlaid news page entered")
+    elif newsPage == "spiegel":
+        return get_spiegel_article_urls(amount, keyword)
+    raise ValueError("Invalid news page entered")
 
 def store_articles_in_file(newsPage: str, amount: int = 500, keyword: str = ""):
     links = get_article_url_list_for_page(newsPage, amount, keyword)
@@ -107,11 +126,13 @@ def main():
     t2 = threading.Thread(group=None, target=store_articles_in_file, args=("rferl", amount, keyword,))
     t3 = threading.Thread(group=None, target=store_articles_in_file, args=("chinadaily", amount, keyword,))
     t4 = threading.Thread(group=None, target=store_articles_in_file, args=("moscowtimes", amount, keyword,))
+    t5 = threading.Thread(group=None, target=store_articles_in_file, args=("spiegel", amount, keyword,))
 
     t1.start()
     t2.start()
     t3.start()
     t4.start()
+    t5.start()
     
 if __name__=="__main__":
     main()
