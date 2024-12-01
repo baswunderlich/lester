@@ -4,6 +4,17 @@ import sys
 import threading
 import json
 
+
+def get_moscowtimes_article_urls(limit: int, keyword: str) -> []:
+    article_urls = []
+    pageindex = 1
+
+    url = f"https://www.themoscowtimes.com/api/search?query={keyword}&section=news"
+    response = json.loads(requests.get(url).text)
+    for i in range(min(len(response), limit)):
+        article_urls.append(response[i]["url"])
+    return article_urls
+
 def get_sabc_article_urls(limit: int, keyword: str) -> []:
     article_urls = []
     pageindex = 1
@@ -67,17 +78,19 @@ def get_chinadaily_article_urls(limit: int, keyword: str):
                 return article_urls
         pageindex += 1
 
-def getArticleUrlListForPage(newsPage: str, amount: int = 500, keyword: str = ""):
+def get_article_url_list_for_page(newsPage: str, amount: int = 500, keyword: str = ""):
     if newsPage == "sabc":
         return get_sabc_article_urls(amount, keyword)
     elif newsPage == "rferl":
         return get_rferl_article_urls(amount, keyword)
     elif newsPage == "chinadaily":
         return get_chinadaily_article_urls(amount, keyword)
+    elif newsPage == "moscowtimes":
+        return get_moscowtimes_article_urls(amount, keyword)
     raise ValueError("Invlaid news page entered")
 
-def storeArticlesInFile(newsPage: str, amount: int = 500, keyword: str = ""):
-    links = getArticleUrlListForPage(newsPage, amount, keyword)
+def store_articles_in_file(newsPage: str, amount: int = 500, keyword: str = ""):
+    links = get_article_url_list_for_page(newsPage, amount, keyword)
 
     file = open(f"articles_{newsPage}_{keyword}.txt", "w")
     for link in links:
@@ -90,13 +103,15 @@ def main():
     amount = int(sys.argv[2])
     print(f"Looking for articles with the keyword \"{keyword}\"")
 
-    t1 = threading.Thread(group=None, target=storeArticlesInFile, args=("sabc", amount, keyword,))
-    t2 = threading.Thread(group=None, target=storeArticlesInFile, args=("rferl", amount, keyword,))
-    t3 = threading.Thread(group=None, target=storeArticlesInFile, args=("chinadaily", amount, keyword,))
+    t1 = threading.Thread(group=None, target=store_articles_in_file, args=("sabc", amount, keyword,))
+    t2 = threading.Thread(group=None, target=store_articles_in_file, args=("rferl", amount, keyword,))
+    t3 = threading.Thread(group=None, target=store_articles_in_file, args=("chinadaily", amount, keyword,))
+    t4 = threading.Thread(group=None, target=store_articles_in_file, args=("moscowtimes", amount, keyword,))
 
     t1.start()
     t2.start()
     t3.start()
+    t4.start()
     
 if __name__=="__main__":
     main()
