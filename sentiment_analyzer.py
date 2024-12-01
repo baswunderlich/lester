@@ -49,7 +49,7 @@ def saveArticle(article, news_site, link):
     article_as_json = json.dumps(storable_article, cls=ArticleEncoder)
     if not os.path.isdir(f"articles_{news_site}"):
         os.mkdir(f"articles_{news_site}")
-    filename = f"articles_{news_site}/articles_{convert_to_hash(link)}.json"
+    filename = f"data/articles_{news_site}/articles_{convert_to_hash(link)}.json"
     file = open(filename, "w")
     file.write(article_as_json)
 
@@ -64,7 +64,7 @@ def to_storable_result(result: [int, int], news_site: str, keyword: str, article
     return result_object
 
 def saveResults(results: [[int, int]], news_site: str, keyword: str, articles: [StorableArticle]):
-    file = open(f"results_{news_site}_{keyword}.json", "w")
+    file = open(f"data/results_{news_site}_{keyword}.json", "w")
     storable_result_objects = []
     for index, result in enumerate(results):
         result_object = ArticleResult(
@@ -144,11 +144,16 @@ def download_article(link: str, news_site: str) -> StorableArticle:
     return article
 
 def scrap_articles(keyword: str, news_site: str) -> []:   
+<<<<<<< Updated upstream
     filename_article_hrefs = f"articles_{news_site}_{keyword}.txt" 
     if not os.path.isfile(filename_article_hrefs):
         print(f"No hrefs file was found for: keyword={keyword}, news_site={news_site}\n => {filename_article_hrefs}")
         return []
     article_file = open(filename_article_hrefs)
+=======
+    article_file = open(f"data/articles_{news_site}_{keyword}.txt")
+    filename_article_hrefs = f"data/articles_{news_site}_{keyword}.txt" 
+>>>>>>> Stashed changes
     lines = article_file.readlines()
     articles = []
     
@@ -157,7 +162,7 @@ def scrap_articles(keyword: str, news_site: str) -> []:
             break
         link = link.strip()
         article: NewsArticle
-        potential_filename = f"articles_{news_site}/articles_{convert_to_hash(link)}.json" 
+        potential_filename = f"data/articles_{news_site}/articles_{convert_to_hash(link)}.json" 
         exists_file = os.path.isfile(potential_filename)
         if exists_file and not in_rampage_mode:
             print(f"found article {link} locally: {potential_filename} ")
@@ -178,7 +183,7 @@ def scrap_articles(keyword: str, news_site: str) -> []:
     return articles
 
 def read_cached_results(news_site: str, keyword: str):
-    results = json.loads(open(f"results_{news_site}_{keyword}.json").read())
+    results = json.loads(open(f"data/results_{news_site}_{keyword}.json").read())
     return results
 
 def setupNltk():
@@ -188,6 +193,9 @@ def setupNltk():
     nltk.download('vader_lexicon')
 
 def main():
+    if not os.path.isdir(f"data"):
+        os.mkdir(f"data")
+
     sabc_articles = []
     rferl_articles = []
     chinadaily_articles = []
