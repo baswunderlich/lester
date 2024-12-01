@@ -31,7 +31,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["refugees", "600"]
+            "args": ["refugees", "20"]
         }
     ]
 }
