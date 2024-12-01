@@ -23,8 +23,9 @@ in_offline_mode = sys.argv.count("offline") >= 1
 in_rampage_mode = sys.argv.count("rampage") >= 1
 
 sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
-rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
-chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
+rferl_active = sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
+chinadaily_active = sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
+moscowtimes_active = sys.argv.count("moscowtimes") > 0 or sys.argv.count("all") > 0
 
 class ArticleEncoder(json.JSONEncoder):
         def default(self, o):
@@ -140,10 +141,14 @@ def download_article(link: str, news_site: str) -> StorableArticle:
     return article
 
 def scrap_articles(keyword: str, news_site: str) -> []:   
-    article_file = open(f"articles_{news_site}_{keyword}.txt")
     filename_article_hrefs = f"articles_{news_site}_{keyword}.txt" 
+    if not os.path.isfile(filename_article_hrefs):
+        print(f"No hrefs file was found for: keyword={keyword}, news_site={news_site}\n => {filename_article_hrefs}")
+        return []
+    article_file = open(filename_article_hrefs)
     lines = article_file.readlines()
     articles = []
+    
     for i, link in enumerate(lines):
         if link == "":
             break
@@ -152,11 +157,6 @@ def scrap_articles(keyword: str, news_site: str) -> []:
         potential_filename = f"articles_{news_site}/articles_{convert_to_hash(link)}.json" 
         exists_file = os.path.isfile(potential_filename)
         if exists_file and not in_rampage_mode:
-            if os.path.isfile(filename_article_hrefs):
-                file = open(filename_article_hrefs)
-            else:
-                print(f"No hrefs file was found for: keyword={keyword}, news_site={news_site}\n => {filename_article_hrefs}")
-                return []
             print(f"found article {link} locally: {potential_filename} ")
             file = open(potential_filename, "r")
             article = json.loads(str(file.read()), object_hook=StorableArticle)
@@ -188,12 +188,19 @@ def main():
     sabc_articles = []
     rferl_articles = []
     chinadaily_articles = []
+    moscowtimes_articles = []
+
+    results_sabc = []
+    results_rferl = []
+    results_chinadaily = []
+    results_moscowtimes = []
 
     if not in_cache_mode:    
         threads = [
             ScraperThread(program=scrap_articles, news_site="sabc", keyword=keyword),
             ScraperThread(program=scrap_articles, news_site="rferl", keyword=keyword),
-            ScraperThread(program=scrap_articles, news_site="chinadaily", keyword=keyword)
+            ScraperThread(program=scrap_articles, news_site="chinadaily", keyword=keyword),
+            ScraperThread(program=scrap_articles, news_site="moscowtimes", keyword=keyword)
         ]
 
         if sabc_active:
@@ -202,6 +209,8 @@ def main():
             threads[1].start()
         if chinadaily_active:
             threads[2].start()
+        if moscowtimes_active:
+            threads[3].start()
         
         for t in threads:
             if t.is_alive():
@@ -210,6 +219,7 @@ def main():
         sabc_articles = threads[0].articles
         rferl_articles = threads[1].articles
         chinadaily_articles = threads[2].articles
+        moscowtimes_articles = threads[3].articles
 
         if sabc_active:
             results_sabc = analyze_articles(sabc_articles, news_site="sabc", keyword=keyword)
@@ -217,6 +227,8 @@ def main():
             results_rferl = analyze_articles(rferl_articles, news_site="rferl", keyword=keyword)
         if chinadaily_active:
             results_chinadaily = analyze_articles(chinadaily_articles, news_site="chinadaily", keyword=keyword)
+        if moscowtimes_active:
+            results_moscowtimes = analyze_articles(moscowtimes_articles, news_site="moscowtimes", keyword=keyword)
     else:
         if sabc_active:
             results_sabc = read_cached_results(news_site="sabc", keyword=keyword)
@@ -224,6 +236,8 @@ def main():
             results_rferl = read_cached_results(news_site="rferl", keyword=keyword)
         if chinadaily_active:
             results_chinadaily = read_cached_results(news_site="chinadaily", keyword=keyword)
+        if moscowtimes_active:
+            results_moscowtimes = read_cached_results(news_site="moscowtimes", keyword=keyword)
 
     if sabc_active:
         plot_result(results=results_sabc, news_site="sabc")
@@ -231,6 +245,8 @@ def main():
         plot_result(results=results_rferl, news_site="rferl")
     if chinadaily_active:
         plot_result(results=results_chinadaily, news_site="chinadaily")
+    if moscowtimes_active:
+        plot_result(results=results_moscowtimes, news_site="moscowtimes")
 
 if __name__=="__main__":
     setupNltk()
