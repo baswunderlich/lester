@@ -143,17 +143,12 @@ def download_article(link: str, news_site: str) -> StorableArticle:
     saveArticle(article=article, news_site=news_site, link=link)
     return article
 
-def scrap_articles(keyword: str, news_site: str) -> []:   
-<<<<<<< Updated upstream
+def scrap_articles(keyword: str, news_site: str) -> []:
     filename_article_hrefs = f"articles_{news_site}_{keyword}.txt" 
     if not os.path.isfile(filename_article_hrefs):
         print(f"No hrefs file was found for: keyword={keyword}, news_site={news_site}\n => {filename_article_hrefs}")
         return []
     article_file = open(filename_article_hrefs)
-=======
-    article_file = open(f"data/articles_{news_site}_{keyword}.txt")
-    filename_article_hrefs = f"data/articles_{news_site}_{keyword}.txt" 
->>>>>>> Stashed changes
     lines = article_file.readlines()
     articles = []
     
