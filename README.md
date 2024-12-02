@@ -5,13 +5,28 @@ This is a tool for sentiment analysis on news sites
 Python: 3.10.4
 
 ## article_finder.py (crawler)
-    python ./article_finder.py <keyword> <amount of articles e.g. 500>
+    python ./article_finder.py <keyword> <amount of articles e.g. 500> <newspage> <newspage> ...
 
 Example: 
 
-    python ./article_finder.py trees 300
+    python ./article_finder.py trees 300 all
 
-this will fetch me 300 links to articles for each known news site
+this will fetch me 300 links to articles that contain the word tree from each known news site
+
+Example: 
+
+    python ./article_finder.py trees 300 sabc rferl
+
+this will fetch me 300 links to articles that contain the word tree from sabc and rferl
+
+currently supported news pages are:
+
+- sabc
+- rferl
+- chinadaily
+- moscowtimes
+- spiegel
+the keyword all will fetch results of all this pages
 
 ## sentiment_analyzer.py (sentiment analyzer and plotter)
     python ./sentiment_analyzer.py <keyword> <keyword> ...
