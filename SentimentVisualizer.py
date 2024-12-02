@@ -1,16 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import datetime
 import matplotlib.dates as mdates
 from datetime import timedelta
 
 global_fig, global_axs = plt.subplots(1, 1, figsize=(11, 5))
 
-def plot_result(results, news_site, keyword):
+def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     dateFormat = "%Y-%m-%d %H:%M:%S"
-
+    start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+    
     # Extract and process dates
-    filtered_results = [result for result in results if "date_published" in result and result["date_published"] is not None]
+    filtered_results = [
+        result for result in results 
+        if "date_published" in result 
+        and result["date_published"] is not None 
+        and datetime.datetime.strptime(result["date_published"], dateFormat) >= start_date
+    ]
     publishing_dates = np.vectorize(lambda result: result["date_published"])(filtered_results)
     if not filtered_results:
         print("no reulsts :(")
@@ -32,7 +39,7 @@ def plot_result(results, news_site, keyword):
     diff_fn = np.poly1d(diff_coef)
     diff_dates = dates  # Dates for the second plot remain the same
 
-    step = 30
+    num_ticks = 25
     
     # Set up the figure with two subplots
     fig, axs = plt.subplots(2, 1, figsize=(11, 8))
@@ -45,7 +52,7 @@ def plot_result(results, news_site, keyword):
     axs[0].legend()
     axs[0].grid(True)
     axs[0].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-    axs[0].xaxis.set_major_locator(mdates.MonthLocator(interval=step))
+    axs[0].xaxis.set_major_locator(MaxNLocator(nbins=num_ticks))
     axs[0].tick_params(axis="x", rotation=45)
     axs[0].set_xlim(dates[0] - timedelta(days=3), dates[-1])  # Set x-axis limits
     
@@ -58,7 +65,7 @@ def plot_result(results, news_site, keyword):
     axs[1].legend()
     axs[1].grid(True)
     axs[1].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-    axs[1].xaxis.set_major_locator(mdates.MonthLocator(interval=step))
+    axs[1].xaxis.set_major_locator(MaxNLocator(nbins=num_ticks))
     axs[1].tick_params(axis="x", rotation=45)
     axs[1].set_xlim(dates[0] - timedelta(days=3), dates[-1])  # Set x-axis limits
     
