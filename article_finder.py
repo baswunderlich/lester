@@ -5,6 +5,15 @@ import threading
 import json
 import os 
 
+
+sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
+rferl_active = sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
+chinadaily_active = sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
+moscowtimes_active = sys.argv.count("moscowtimes") > 0 or sys.argv.count("all") > 0
+rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
+chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
+spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
+
 def get_spiegel_article_urls(limit: int, keyword: str) -> []:
     article_urls = []
     page_index = 2
@@ -116,6 +125,7 @@ def store_articles_in_file(newsPage: str, amount: int = 500, keyword: str = ""):
     for link in links:
         file.write(link+"\n")
     file.close()
+    print(f"Found {str(len(links))} articles for {newsPage} on {keyword}.")
 
 
 def main():
@@ -125,18 +135,22 @@ def main():
     keyword = sys.argv[1]
     amount = int(sys.argv[2])
     print(f"Looking for articles with the keyword \"{keyword}\"")
+    if sabc_active:
+        t1 = threading.Thread(group=None, target=store_articles_in_file, args=("sabc", amount, keyword,))
+        t1.start()
+    if rferl_active:
+        t2 = threading.Thread(group=None, target=store_articles_in_file, args=("rferl", amount, keyword,))
+        t2.start()
+    if chinadaily_active:
+        t3 = threading.Thread(group=None, target=store_articles_in_file, args=("chinadaily", amount, keyword,))
+        t3.start()
+    if moscowtimes_active:
+        t4 = threading.Thread(group=None, target=store_articles_in_file, args=("moscowtimes", amount, keyword,))
+        t4.start()
+    if spiegel_active:
+        t5 = threading.Thread(group=None, target=store_articles_in_file, args=("spiegel", amount, keyword,))
+        t5.start()
 
-    t1 = threading.Thread(group=None, target=store_articles_in_file, args=("sabc", amount, keyword,))
-    t2 = threading.Thread(group=None, target=store_articles_in_file, args=("rferl", amount, keyword,))
-    t3 = threading.Thread(group=None, target=store_articles_in_file, args=("chinadaily", amount, keyword,))
-    t4 = threading.Thread(group=None, target=store_articles_in_file, args=("moscowtimes", amount, keyword,))
-    t5 = threading.Thread(group=None, target=store_articles_in_file, args=("spiegel", amount, keyword,))
-
-    t1.start()
-    t2.start()
-    t3.start()
-    t4.start()
-    t5.start()
     
 if __name__=="__main__":
     main()
