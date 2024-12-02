@@ -45,8 +45,8 @@ def convert_to_storable_article(old_article) -> StorableArticle:
 def saveArticle(article, news_site, link):
     storable_article = convert_to_storable_article(article)
     article_as_json = json.dumps(storable_article, cls=ArticleEncoder)
-    if not os.path.isdir(f"articles_{news_site}"):
-        os.mkdir(f"articles_{news_site}")
+    if not os.path.isdir(f"data/articles_{news_site}"):
+        os.mkdir(f"data/articles_{news_site}")
     filename = f"data/articles_{news_site}/articles_{convert_to_hash(link)}.json"
     file = open(filename, "w")
     file.write(article_as_json)
@@ -142,7 +142,7 @@ def download_article(link: str, news_site: str) -> StorableArticle:
     return article
 
 def scrap_articles(keyword: str, news_site: str) -> []:
-    filename_article_hrefs = f"articles_{news_site}_{keyword}.txt" 
+    filename_article_hrefs = f"data/articles_{news_site}_{keyword}.txt" 
     if not os.path.isfile(filename_article_hrefs):
         print(f"No hrefs file was found for: keyword={keyword}, news_site={news_site}\n => {filename_article_hrefs}")
         return []
