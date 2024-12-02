@@ -7,8 +7,6 @@ import os
 
 
 sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
-rferl_active = sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
-chinadaily_active = sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
 moscowtimes_active = sys.argv.count("moscowtimes") > 0 or sys.argv.count("all") > 0
 rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
 chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
