@@ -256,16 +256,16 @@ def main():
             results_spiegel = read_cached_results(news_site="spiegel", keyword=keyword)
 
     if sabc_active:
-        plot_result(results=results_sabc, news_site="sabc")
+        plot_result(results=results_sabc, news_site="sabc", keyword=keyword)
     if rferl_active:
-        plot_result(results=results_rferl, news_site="rferl")
+        plot_result(results=results_rferl, news_site="rferl", keyword=keyword)
     if chinadaily_active:
-        plot_result(results=results_chinadaily, news_site="chinadaily")
+        plot_result(results=results_chinadaily, news_site="chinadaily", keyword=keyword)
     if moscowtimes_active:
-        plot_result(results=results_moscowtimes, news_site="moscowtimes")
+        plot_result(results=results_moscowtimes, news_site="moscowtimes", keyword=keyword)
     if spiegel_active:
-        plot_result(results=results_spiegel, news_site="spiegel")
-    show_plots()
+        plot_result(results=results_spiegel, news_site="spiegel", keyword=keyword)
+    show_plots(keyword=keyword)
 
 if __name__=="__main__":
     setupNltk()

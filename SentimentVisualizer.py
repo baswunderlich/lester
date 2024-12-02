@@ -6,7 +6,7 @@ from datetime import timedelta
 
 global_fig, global_axs = plt.subplots(1, 1, figsize=(11, 5))
 
-def plot_result(results, news_site):
+def plot_result(results, news_site, keyword):
     dateFormat = "%Y-%m-%d %H:%M:%S"
 
     # Extract and process dates
@@ -40,7 +40,7 @@ def plot_result(results, news_site):
     # Plot Positive and Negative Sentiments
     axs[0].plot(dates, positive_scores, label="Positive Sentiment", color="#0e7800", marker='o')
     axs[0].plot(dates, negative_scores, label="Negative Sentiment", color="#ed1103", marker='x')
-    axs[0].set_title(f"Sentiment Analysis for {news_site} ({len(filtered_results)} articles)", fontsize=14)
+    axs[0].set_title(f"Sentiment Analysis for {news_site} on {keyword} ({len(filtered_results)} articles)", fontsize=14)
     axs[0].set_ylabel("Sentiment Score", fontsize=12)
     axs[0].legend()
     axs[0].grid(True)
@@ -68,6 +68,8 @@ def plot_result(results, news_site):
     plt.tight_layout()
 
 
-def show_plots():
+def show_plots(keyword):
     global_axs.legend()
+    global_axs.grid(True)
+    global_axs.set_title(f"Sentiment differneces for all news sites on {keyword}", fontsize=14)
     plt.show()
