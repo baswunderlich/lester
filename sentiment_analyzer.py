@@ -57,7 +57,7 @@ def to_storable_result(result: [int, int], news_site: str, keyword: str, article
         negative_result=result[1],
         url=article.url,
         hash_value=convert_to_hash(article.url),
-        date_published=article.date_publish
+        date_publish=article.date_publish
         )
     return result_object
 
@@ -70,7 +70,7 @@ def saveResults(results: [[int, int]], news_site: str, keyword: str, articles: [
             negative_result=result[1],
             url=articles[index].url,
             hash_value=convert_to_hash(articles[index].url),
-            date_published=articles[index].date_publish
+            date_publish=articles[index].date_publish
             )
         storable_result_objects.append(result_object)
     results_as_json = json.dumps(storable_result_objects, cls=ArticleEncoder)

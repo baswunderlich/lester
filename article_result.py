@@ -3,21 +3,21 @@ class ArticleResult:
     negative_result: int
     url: str
     hash_value: str
-    date_published: str
+    date_publish: str
 
     def __init__(self, 
         positive_result: int,
         negative_result: int, 
         url: str, 
         hash_value: str, 
-        date_published: str):
+        date_publish: str):
 
         self.positive_result = positive_result
         self.negative_result = negative_result
         self.url = url
         self.hash_value = hash_value
-        if(len(date_published) >= 10):
-            self.date_published = date_published
+        if(len(date_publish) >= 10):
+            self.date_publish = date_publish
 
     
     def to_dict(self):

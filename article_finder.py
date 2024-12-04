@@ -94,7 +94,7 @@ def get_chinadaily_article_urls(limit: int, keyword: str):
         page = requests.get(url)
         page_decoded = json.loads(page.text)
 
-        for article in page_decoded["content"]:
+        for article in page_decoded["content"][:2]:
             href = article["url"]
             if article_urls.count(href) == 0:
                 article_urls.append(href)

@@ -1,3 +1,5 @@
+from newsplease import NewsArticle
+
 #necessary due to the fact, that NewsArticle can not be serialized as json
 class StorableArticle:
     maintext: str = ""
@@ -8,7 +10,7 @@ class StorableArticle:
     date_publish: str = ""
     date_download: str = ""
 
-    def __init__(self, old_article):
+    def __init__(self, old_article: NewsArticle):
         if isinstance(old_article, dict):
             self.__dict__.update(old_article)
         else:
