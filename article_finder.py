@@ -71,7 +71,7 @@ def get_rferl_article_urls(limit: int, keyword: str):
         soup = BeautifulSoup(page.content, 'html.parser')
 
         articles = soup.find_all("div", {"class": "media-block"})
-        for article in articles:
+        for article in articles[:5]:
             a_s = article.find_all("a")
             for a in a_s:
                 #At this site. The hrefs do not include the serveradresse.
