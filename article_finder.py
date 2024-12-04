@@ -14,7 +14,7 @@ spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
 
 def get_spiegel_article_urls(limit: int, keyword: str) -> []:
     article_urls = []
-    page_index = 2
+    page_index = 1
 
     while True:
         url = f"https://www.spiegel.de/services/sitesearch/search?segments=spon_international&q={keyword}&after=-2208988800&before=1733078189&page_size=20&page={page_index}"
