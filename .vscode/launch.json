@@ -1,6 +1,15 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
+        {
+            "name": "Python Debugger: Sentiment Climate All",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["climate", "all"]
+        },
         {
             "name": "Python Debugger: Sentiment Climate Chinadaily",
             "type": "debugpy",
@@ -50,12 +59,20 @@
             "args": ["climate", "all", "cache"]
         },
         {
-            "name": "Python Debugger: Article finder",
+            "name": "Python Debugger: Article finder Climate All",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["refugees", "20"]
+            "args": ["climate", "chinadaily"]
+        },
+        {
+            "name": "Python Debugger: Article finder Refugees All",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["refugees", "all"]
         }
     ]
 }

@@ -137,7 +137,12 @@ def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str):
     return read_cached_results(news_site= news_site, keyword= keyword)
 
 def download_article(link: str, news_site: str) -> StorableArticle:
-    article = StorableArticle(NewsPlease.from_url(link))
+    try:
+        news_article = NewsPlease.from_url(link)
+    except:
+        print("Exception with: ", link)
+        return None
+    article = StorableArticle(news_article)
     saveArticle(article=article, news_site=news_site, link=link)
     return article
 
@@ -168,10 +173,10 @@ def scrap_articles(keyword: str, news_site: str) -> []:
         else:
             print(f"There is an article missing: {link}")
             continue
-        
-        if not article.maintext == "":
-            articles.append(article)
-            print(f"Scrapping... {i+1}/{len(lines)} ({news_site}) -> {article.url}")
+        if article != None:
+            if not article.maintext == "":
+                articles.append(article)
+                print(f"Scrapping... {i+1}/{len(lines)} ({news_site}) -> {article.url}")
     
     return articles
 
