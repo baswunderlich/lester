@@ -20,7 +20,7 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     ]
     publishing_dates = np.vectorize(lambda result: result["date_publish"])(filtered_results)
     if not filtered_results:
-        print("no reulsts :(")
+        print("no results :(")
     dates = np.array([datetime.datetime.strptime(d, dateFormat) for d in publishing_dates])
     
     # Sort data by dates
