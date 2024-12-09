@@ -1,21 +1,78 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
         {
-            "name": "Python Debugger: Sentiment",
+            "name": "Python Debugger: Sentiment Climate All",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["refugees", "chinadaily", "offline"]
+            "args": ["climate", "all"]
         },
         {
-            "name": "Python Debugger: Article finder",
+            "name": "Python Debugger: Sentiment Climate Chinadaily",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["refugees", "600"]
+            "args": ["climate", "chinadaily"]
+        },
+        {
+            "name": "Python Debugger: Sentiment Climate SABC",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["climate", "sabc"]
+        },
+        {
+            "name": "Python Debugger: Sentiment Moscowtimes",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["refugees", "moscowtimes"]
+        },
+        {
+            "name": "Python Debugger: Sentiment Spiegel",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["refugees", "spiegel"]
+        },
+        {
+            "name": "Python Debugger: Sentiment Spiegel",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["refugees", "spiegel"]
+        },
+        {
+            "name": "Python Debugger: Sentiment all cache",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["climate", "all", "cache"]
+        },
+        {
+            "name": "Python Debugger: Article finder Climate All",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["climate", "chinadaily"]
+        },
+        {
+            "name": "Python Debugger: Article finder Refugees All",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["refugees", "all"]
         }
     ]
 }

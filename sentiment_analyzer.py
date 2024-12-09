@@ -1,25 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import string
-from collections import Counter
 from matplotlib.pyplot import figure
 import nltk
 from nltk.corpus import stopwords
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-import newsplease
 from newsplease import NewsPlease, NewsArticle
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import json
 import sys
 import os
 import hashlib
-from threading import Thread
-from SentimentVisualizer import plot_result
-import datetime 
-
+from SentimentVisualizer import plot_result, show_plots
+from article_result import ArticleResult
+from storable_article import StorableArticle
+from scraper_thread import ScraperThread
 
 keyword = sys.argv[1]
 in_cache_mode = sys.argv.count("cache") > 0
@@ -27,74 +23,10 @@ in_offline_mode = sys.argv.count("offline") >= 1
 in_rampage_mode = sys.argv.count("rampage") >= 1
 
 sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
+moscowtimes_active = sys.argv.count("moscowtimes") > 0 or sys.argv.count("all") > 0
 rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
 chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
-secrets_file = open("secrets.json", "r")
-
-
-class ArticleResult:
-    positive_result: int
-    negative_result: int
-    url: str
-    hash_value: str
-    date_published: str
-
-    def __init__(self, 
-        positive_result: int,
-        negative_result: int, 
-        url: str, 
-        hash_value: str, 
-        date_published: str):
-
-        self.positive_result = positive_result
-        self.negative_result = negative_result
-        self.url = url
-        self.hash_value = hash_value
-        if(len(date_published) >= 10):
-            self.date_published = date_published
-
-    
-    def to_dict(self):
-        return {
-            "positive_result": self.positive_result,
-            "negative_result": self.negative_result,
-            "url": self.url,
-            "hash_value": self.hash_value
-        }
-
-# custom thread
-class ScraperThread(Thread):
-    def __init__(self, program, news_site, keyword):
-        self.program = program
-        self.articles = []
-        self.news_site = news_site
-        self.keyword = keyword
-        Thread.__init__(self)
-
-    def run(self):
-	    self.articles = self.program(keyword=self.keyword, news_site=self.news_site)
-
-#necessary due to the fact, that NewsArticle can not be serialized as json
-class StorableArticle:
-    maintext: str = ""
-    source_domain: str = ""
-    title: str = ""
-    url: str = ""
-    description: str = ""
-    date_publish: str = ""
-    date_download: str = ""
-
-    def __init__(self, old_article):
-        if isinstance(old_article, dict):
-            self.__dict__.update(old_article)
-        else:
-            self.maintext = old_article.maintext
-            self.source_domain = old_article.source_domain
-            self.title = old_article.title
-            self.url = old_article.url
-            self.description = old_article.description
-            self.date_publish = str(old_article.date_publish)
-            self.date_download = str(old_article.date_download)
+spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
 
 class ArticleEncoder(json.JSONEncoder):
         def default(self, o):
@@ -113,9 +45,9 @@ def convert_to_storable_article(old_article) -> StorableArticle:
 def save_article(article, news_site, link):
     storable_article = convert_to_storable_article(article)
     article_as_json = json.dumps(storable_article, cls=ArticleEncoder)
-    if not os.path.isdir(f"articles_{news_site}"):
-        os.mkdir(f"articles_{news_site}")
-    filename = f"articles_{news_site}/articles_{convert_to_hash(link)}.json"
+    if not os.path.isdir(f"data/articles_{news_site}"):
+        os.mkdir(f"data/articles_{news_site}")
+    filename = f"data/articles_{news_site}/articles_{convert_to_hash(link)}.json"
     file = open(filename, "w")
     file.write(article_as_json)
 
@@ -125,12 +57,12 @@ def to_storable_result(result: [int, int], news_site: str, keyword: str, article
         negative_result=result[1],
         url=article.url,
         hash_value=convert_to_hash(article.url),
-        date_published=article.date_publish
+        date_publish=article.date_publish
         )
     return result_object
 
-def save_results(results: [[int, int]], news_site: str, keyword: str, articles: [StorableArticle]):
-    file = open(f"results_{news_site}_{keyword}.json", "w")
+def saveResults(results: [[int, int]], news_site: str, keyword: str, articles: [StorableArticle]):
+    file = open(f"data/results_{news_site}_{keyword}.json", "w")
     storable_result_objects = []
     for index, result in enumerate(results):
         result_object = ArticleResult(
@@ -138,7 +70,7 @@ def save_results(results: [[int, int]], news_site: str, keyword: str, articles: 
             negative_result=result[1],
             url=articles[index].url,
             hash_value=convert_to_hash(articles[index].url),
-            date_published=articles[index].date_publish
+            date_publish=articles[index].date_publish
             )
         storable_result_objects.append(result_object)
     results_as_json = json.dumps(storable_result_objects, cls=ArticleEncoder)
@@ -205,28 +137,32 @@ def analyze_articles(articles: [StorableArticle], news_site: str, keyword: str):
     return read_cached_results(news_site= news_site, keyword= keyword)
 
 def download_article(link: str, news_site: str) -> StorableArticle:
-    article = StorableArticle(NewsPlease.from_url(link))
-    save_article(article=article, news_site=news_site, link=link)
+    try:
+        news_article = NewsPlease.from_url(link)
+    except:
+        print("Exception with: ", link)
+        return None
+    article = StorableArticle(news_article)
+    saveArticle(article=article, news_site=news_site, link=link)
     return article
 
-def scrap_articles(keyword: str, news_site: str) -> []:   
-    article_file = open(f"articles_{news_site}_{keyword}.txt")
-    filename_article_hrefs = f"articles_{news_site}_{keyword}.txt" 
+def scrap_articles(keyword: str, news_site: str) -> []:
+    filename_article_hrefs = f"data/articles_{news_site}_{keyword}.txt" 
+    if not os.path.isfile(filename_article_hrefs):
+        print(f"No hrefs file was found for: keyword={keyword}, news_site={news_site}\n => {filename_article_hrefs}")
+        return []
+    article_file = open(filename_article_hrefs)
     lines = article_file.readlines()
     articles = []
+    
     for i, link in enumerate(lines):
         if link == "":
             break
         link = link.strip()
         article: NewsArticle
-        potential_filename = f"articles_{news_site}/articles_{convert_to_hash(link)}.json" 
+        potential_filename = f"data/articles_{news_site}/articles_{convert_to_hash(link)}.json" 
         exists_file = os.path.isfile(potential_filename)
         if exists_file and not in_rampage_mode:
-            if os.path.isfile(filename_article_hrefs):
-                file = open(filename_article_hrefs)
-            else:
-                print(f"No hrefs file was found for: keyword={keyword}, news_site={news_site}\n => {filename_article_hrefs}")
-                return []
             print(f"found article {link} locally: {potential_filename} ")
             file = open(potential_filename, "r")
             article = json.loads(str(file.read()), object_hook=StorableArticle)
@@ -237,23 +173,15 @@ def scrap_articles(keyword: str, news_site: str) -> []:
         else:
             print(f"There is an article missing: {link}")
             continue
-        
-        if not article.maintext == "":
-            articles.append(article)
-            print(f"Scrapping... {i+1}/{len(lines)} ({news_site}) -> {article.url}")
+        if article != None:
+            if not article.maintext == "":
+                articles.append(article)
+                print(f"Scrapping... {i+1}/{len(lines)} ({news_site}) -> {article.url}")
     
     return articles
 
-def scrap_sabc_articles(keyword: str) -> []:
-    sabc_articles = scrap_articles(keyword=keyword, news_site="sabc")
-    return sabc_articles
-
-def scrap_rferl_articles(keyword: str) -> []:
-    rferl_articles = scrap_articles(keyword=keyword, news_site="rferl")
-    return rferl_articles
-
 def read_cached_results(news_site: str, keyword: str):
-    results = json.loads(open(f"results_{news_site}_{keyword}.json").read())
+    results = json.loads(open(f"data/results_{news_site}_{keyword}.json").read())
     return results
 
 def get_secret(name: str) -> str:
@@ -267,15 +195,28 @@ def setupNltk():
     nltk.download('vader_lexicon')
 
 def main():
+    if not os.path.isdir(f"data"):
+        os.mkdir(f"data")
+
     sabc_articles = []
     rferl_articles = []
     chinadaily_articles = []
+    moscowtimes_articles = []
+    spiegel_articles = []
+
+    results_sabc = []
+    results_rferl = []
+    results_chinadaily = []
+    results_moscowtimes = []
+    results_spiegel = []
 
     if not in_cache_mode:    
         threads = [
             ScraperThread(program=scrap_articles, news_site="sabc", keyword=keyword),
             ScraperThread(program=scrap_articles, news_site="rferl", keyword=keyword),
-            ScraperThread(program=scrap_articles, news_site="chinadaily", keyword=keyword)
+            ScraperThread(program=scrap_articles, news_site="chinadaily", keyword=keyword),
+            ScraperThread(program=scrap_articles, news_site="moscowtimes", keyword=keyword),
+            ScraperThread(program=scrap_articles, news_site="spiegel", keyword=keyword)
         ]
 
         if sabc_active:
@@ -284,6 +225,10 @@ def main():
             threads[1].start()
         if chinadaily_active:
             threads[2].start()
+        if moscowtimes_active:
+            threads[3].start()
+        if spiegel_active:
+            threads[4].start()
         
         for t in threads:
             if t.is_alive():
@@ -292,6 +237,8 @@ def main():
         sabc_articles = threads[0].articles
         rferl_articles = threads[1].articles
         chinadaily_articles = threads[2].articles
+        moscowtimes_articles = threads[3].articles
+        spiegel_articles = threads[4].articles
 
         if sabc_active:
             results_sabc = analyze_articles(sabc_articles, news_site="sabc", keyword=keyword)
@@ -299,6 +246,10 @@ def main():
             results_rferl = analyze_articles(rferl_articles, news_site="rferl", keyword=keyword)
         if chinadaily_active:
             results_chinadaily = analyze_articles(chinadaily_articles, news_site="chinadaily", keyword=keyword)
+        if moscowtimes_active:
+            results_moscowtimes = analyze_articles(moscowtimes_articles, news_site="moscowtimes", keyword=keyword)
+        if spiegel_active:
+            results_spiegel = analyze_articles(spiegel_articles, news_site="spiegel", keyword=keyword)
     else:
         if sabc_active:
             results_sabc = read_cached_results(news_site="sabc", keyword=keyword)
@@ -306,13 +257,22 @@ def main():
             results_rferl = read_cached_results(news_site="rferl", keyword=keyword)
         if chinadaily_active:
             results_chinadaily = read_cached_results(news_site="chinadaily", keyword=keyword)
+        if moscowtimes_active:
+            results_moscowtimes = read_cached_results(news_site="moscowtimes", keyword=keyword)
+        if spiegel_active:
+            results_spiegel = read_cached_results(news_site="spiegel", keyword=keyword)
 
     if sabc_active:
-        plot_result(results=results_sabc, news_site="sabc")
+        plot_result(results=results_sabc, news_site="sabc", keyword=keyword)
     if rferl_active:
-        plot_result(results=results_rferl, news_site="rferl")
+        plot_result(results=results_rferl, news_site="rferl", keyword=keyword)
     if chinadaily_active:
-        plot_result(results=results_chinadaily, news_site="chinadaily")
+        plot_result(results=results_chinadaily, news_site="chinadaily", keyword=keyword)
+    if moscowtimes_active:
+        plot_result(results=results_moscowtimes, news_site="moscowtimes", keyword=keyword)
+    if spiegel_active:
+        plot_result(results=results_spiegel, news_site="spiegel", keyword=keyword)
+    show_plots(keyword=keyword)
 
 if __name__=="__main__":
     setupNltk()
