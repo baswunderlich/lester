@@ -51,6 +51,14 @@
             "args": ["refugees", "spiegel"]
         },
         {
+            "name": "Python Debugger: Sentiment Sydney",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["refugees", "sydney"]
+        },
+        {
             "name": "Python Debugger: Sentiment all cache",
             "type": "debugpy",
             "request": "launch",

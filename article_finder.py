@@ -12,6 +12,45 @@ moscowtimes_active = sys.argv.count("moscowtimes") > 0 or sys.argv.count("all") 
 rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
 chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
 spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
+sydney_active = sys.argv.count("sydney") > 0 or sys.argv.count("all") > 0
+
+
+def get_sydneyMH_article_urls(keyword: str) -> list:  # Sydney Morning Herald
+    article_urls = []
+    page_index = 1
+    enough_articles = False
+
+    while not enough_articles:
+        url = f"https://www.smh.com.au/search?sortBy=MOST_RECENT&text={keyword}&page={page_index}"
+        page = requests.get(url)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        
+        # Locate sections with the class `_1h0gt`
+        sections = soup.find_all("section", class_="_1H0gt")
+        print(f"Found {len(sections)} sections on page {page_index}.")  # Debug print
+        
+        for section in sections:
+            # Locate individual article divs within the section
+            article_divs = section.find_all("div", attrs={"data-testid": "index-story-tile"})
+            
+            for article_div in article_divs:
+                # Extract <a> tags with the desired link
+                link_tag = article_div.find("a", attrs={"data-testid": "article-link"})
+                if link_tag:
+                    href = f'https://www.smh.com.au{link_tag["href"]}'
+                    # Avoid duplicates
+                    if href not in article_urls:
+                        article_urls.append(href)
+                        print(f"{len(article_urls)} articles fetched")
+        
+        # Check if we've collected enough articles or reached old ones
+        if len(article_urls) > 0:
+            if is_article_too_old(article_urls[-1]):  # Replace this function with your logic
+                enough_articles = True
+        
+        page_index += 1
+    
+    return article_urls
 
 def get_spiegel_article_urls(keyword: str) -> []:
     article_urls = []
@@ -130,6 +169,8 @@ def get_article_url_list_for_page(newsPage: str, keyword: str = ""):
         return get_moscowtimes_article_urls(keyword)
     elif newsPage == "spiegel":
         return get_spiegel_article_urls(keyword)
+    elif newsPage == "sydney":
+        return get_sydneyMH_article_urls(keyword)
     raise ValueError("Invalid news page entered")
 
 def store_articles_in_file(newsPage: str, keyword: str = ""):
@@ -159,21 +200,24 @@ def main():
 
     keyword = sys.argv[1]
     print(f"Looking for articles with the keyword \"{keyword}\"")
-    if sabc_active:
-        t1 = threading.Thread(group=None, target=store_articles_in_file, args=("sabc", keyword,))
-        t1.start()
-    if rferl_active:
-        t2 = threading.Thread(group=None, target=store_articles_in_file, args=("rferl", keyword,))
-        t2.start()
-    if chinadaily_active:
-        t3 = threading.Thread(group=None, target=store_articles_in_file, args=("chinadaily", keyword,))
-        t3.start()
-    if moscowtimes_active:
-        t4 = threading.Thread(group=None, target=store_articles_in_file, args=("moscowtimes", keyword,))
-        t4.start()
-    if spiegel_active:
-        t5 = threading.Thread(group=None, target=store_articles_in_file, args=("spiegel", keyword,))
-        t5.start()
+    if sydney_active:
+        t6 = threading.Thread(group=None, target=store_articles_in_file, args=("sydney", keyword,))
+        t6.start()
+    # if sabc_active:
+    #     t1 = threading.Thread(group=None, target=store_articles_in_file, args=("sabc", keyword,))
+    #     t1.start()
+    # if rferl_active:
+    #     t2 = threading.Thread(group=None, target=store_articles_in_file, args=("rferl", keyword,))
+    #     t2.start()
+    # if chinadaily_active:
+    #     t3 = threading.Thread(group=None, target=store_articles_in_file, args=("chinadaily", keyword,))
+    #     t3.start()
+    # if moscowtimes_active:
+    #     t4 = threading.Thread(group=None, target=store_articles_in_file, args=("moscowtimes", keyword,))
+    #     t4.start()
+    # if spiegel_active:
+    #     t5 = threading.Thread(group=None, target=store_articles_in_file, args=("spiegel", keyword,))
+    #     t5.start()
 
     
 if __name__=="__main__":

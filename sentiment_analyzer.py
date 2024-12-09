@@ -27,6 +27,7 @@ moscowtimes_active = sys.argv.count("moscowtimes") > 0 or sys.argv.count("all") 
 rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
 chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
 spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
+sydney_active = sys.argv.count("sydney") > 0 or sys.argv.count("all") > 0
 
 class ArticleEncoder(json.JSONEncoder):
         def default(self, o):
@@ -199,12 +200,14 @@ def main():
     chinadaily_articles = []
     moscowtimes_articles = []
     spiegel_articles = []
+    sydney_articles = []
 
     results_sabc = []
     results_rferl = []
     results_chinadaily = []
     results_moscowtimes = []
     results_spiegel = []
+    results_sydney = []
 
     if not in_cache_mode:    
         threads = [
@@ -212,7 +215,8 @@ def main():
             ScraperThread(program=scrap_articles, news_site="rferl", keyword=keyword),
             ScraperThread(program=scrap_articles, news_site="chinadaily", keyword=keyword),
             ScraperThread(program=scrap_articles, news_site="moscowtimes", keyword=keyword),
-            ScraperThread(program=scrap_articles, news_site="spiegel", keyword=keyword)
+            ScraperThread(program=scrap_articles, news_site="spiegel", keyword=keyword),
+            ScraperThread(program=scrap_articles, news_site="sydney", keyword=keyword)
         ]
 
         if sabc_active:
@@ -225,6 +229,8 @@ def main():
             threads[3].start()
         if spiegel_active:
             threads[4].start()
+        if sydney_active:
+            threads[5].start()
         
         for t in threads:
             if t.is_alive():
@@ -235,6 +241,7 @@ def main():
         chinadaily_articles = threads[2].articles
         moscowtimes_articles = threads[3].articles
         spiegel_articles = threads[4].articles
+        sydney_articles = threads[5].articles
 
         if sabc_active:
             results_sabc = analyze_articles(sabc_articles, news_site="sabc", keyword=keyword)
@@ -246,6 +253,8 @@ def main():
             results_moscowtimes = analyze_articles(moscowtimes_articles, news_site="moscowtimes", keyword=keyword)
         if spiegel_active:
             results_spiegel = analyze_articles(spiegel_articles, news_site="spiegel", keyword=keyword)
+        if sydney_active:
+            results_sydney = analyze_articles(sydney_articles, news_site="sydney", keyword=keyword)
     else:
         if sabc_active:
             results_sabc = read_cached_results(news_site="sabc", keyword=keyword)
@@ -257,6 +266,8 @@ def main():
             results_moscowtimes = read_cached_results(news_site="moscowtimes", keyword=keyword)
         if spiegel_active:
             results_spiegel = read_cached_results(news_site="spiegel", keyword=keyword)
+        if sydney_active:
+            results_sydney = read_cached_results(news_site="sydney", keyword=keyword)
 
     if sabc_active:
         plot_result(results=results_sabc, news_site="sabc", keyword=keyword)
@@ -268,6 +279,8 @@ def main():
         plot_result(results=results_moscowtimes, news_site="moscowtimes", keyword=keyword)
     if spiegel_active:
         plot_result(results=results_spiegel, news_site="spiegel", keyword=keyword)
+    if sydney_active:
+        plot_result(results=results_sydney, news_site="sydney", keyword=keyword)
     show_plots(keyword=keyword)
 
 if __name__=="__main__":
