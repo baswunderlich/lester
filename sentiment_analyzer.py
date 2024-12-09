@@ -28,6 +28,7 @@ rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
 chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
 spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
 cnn_active = sys.argv.count("cnn") > 0 or sys.argv.count("all") > 0
+folha_active = sys.argv.count("folha") > 0 or sys.argv.count("all") > 0
 
 class ArticleEncoder(json.JSONEncoder):
         def default(self, o):
@@ -201,6 +202,7 @@ def main():
     moscowtimes_articles = []
     spiegel_articles = []
     cnn_articles = []
+    folha_articles = []
 
     results_sabc = []
     results_rferl = []
@@ -208,6 +210,7 @@ def main():
     results_moscowtimes = []
     results_spiegel = []
     results_cnn = []
+    results_folha = []
 
     if not in_cache_mode:    
         threads = [
@@ -216,7 +219,8 @@ def main():
             ScraperThread(program=scrap_articles, news_site="chinadaily", keyword=keyword),
             ScraperThread(program=scrap_articles, news_site="moscowtimes", keyword=keyword),
             ScraperThread(program=scrap_articles, news_site="spiegel", keyword=keyword),
-            ScraperThread(program=scrap_articles, news_site="cnn", keyword=keyword)
+            ScraperThread(program=scrap_articles, news_site="cnn", keyword=keyword),
+            ScraperThread(program=scrap_articles, news_site="folha", keyword=keyword)
         ]
 
         if sabc_active:
@@ -230,7 +234,9 @@ def main():
         if spiegel_active:
             threads[4].start()
         if cnn_active:
-            threads[4].start()
+            threads[5].start()
+        if folha_active:
+            threads[6].start()
         
         for t in threads:
             if t.is_alive():
@@ -242,6 +248,7 @@ def main():
         moscowtimes_articles = threads[3].articles
         spiegel_articles = threads[4].articles
         cnn_articles = threads[5].articles
+        folha_articles = threads[6].articles
 
         if sabc_active:
             results_sabc = analyze_articles(sabc_articles, news_site="sabc", keyword=keyword)
@@ -255,6 +262,8 @@ def main():
             results_spiegel = analyze_articles(spiegel_articles, news_site="spiegel", keyword=keyword)
         if cnn_active:
             results_cnn = analyze_articles(cnn_articles, news_site="cnn", keyword=keyword)
+        if folha_active:
+            results_folha = analyze_articles(folha_articles, news_site="folha", keyword=keyword)
     else:
         if sabc_active:
             results_sabc = read_cached_results(news_site="sabc", keyword=keyword)
@@ -267,7 +276,9 @@ def main():
         if spiegel_active:
             results_spiegel = read_cached_results(news_site="spiegel", keyword=keyword)
         if cnn_active:
-            results_spiegel = read_cached_results(news_site="cnn", keyword=keyword)
+            results_cnn = read_cached_results(news_site="cnn", keyword=keyword)
+        if folha_active:
+            results_folha = read_cached_results(news_site="folha", keyword=keyword)
 
     if sabc_active:
         plot_result(results=results_sabc, news_site="sabc", keyword=keyword)
@@ -280,7 +291,9 @@ def main():
     if spiegel_active:
         plot_result(results=results_spiegel, news_site="spiegel", keyword=keyword)
     if cnn_active:
-        plot_result(results=results_spiegel, news_site="cnn", keyword=keyword)
+        plot_result(results=results_cnn, news_site="cnn", keyword=keyword)
+    if folha_active:
+        plot_result(results=results_folha, news_site="folha", keyword=keyword)
     show_plots(keyword=keyword)
 
 if __name__=="__main__":

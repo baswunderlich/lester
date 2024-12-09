@@ -15,33 +15,33 @@ rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
 chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
 spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
 cnn_active = sys.argv.count("cnn") > 0 or sys.argv.count("all") > 0
-fox_active = sys.argv.count("fox") > 0 or sys.argv.count("all") > 0
+folha_active = sys.argv.count("folha") > 0 or sys.argv.count("all") > 0
 
-def get_fox_article_urls(keyword: str) -> []:
+def get_folha_article_urls(keyword: str) -> []:
     #Fox news does not sort the articles by publishing date. We therefore just
     #get a fixed amount and let them being sorted by numpy in the plotting
     article_urls = []
     page_index = 0
     enough_articles = False
+    last_id : int = None
 
     while not enough_articles:
-        url = f"https://moxie.foxnews.com/search/web?q=climate&start={page_index*10 + 1}&callback=__jp{page_index+1}"
-        raw_response = requests.get(url)
-        cleaned_text = raw_response.text[raw_response.text.find("{"):len(raw_response.text)-1]
-        response = json.loads(cleaned_text)
-        results = response["data"]
+        url = f"https://search.folha.uol.com.br/search?q={keyword}&site%5B%5D=internacional%2Fen&periodo=todos&sr={page_index*50+1}&results_count=382&search_time=0%2C022&url=https%3A%2F%2Fsearch.folha.uol.com.br%2Fsearch%3Fq%3Dclimate%26site%255B%255D%3Dinternacional%252Fen%26periodo%3Dtodos%26sr%3D51"
+        page = requests.get(url)
+        soup = BeautifulSoup(page.content, 'html.parser')
 
-        for r in results:
-            if r["type"] != "article":
-                continue
-            href = r["attributes"]["canonical_url"]
-            if article_urls.count(href) == 0:
-                article_urls.append(href)
-                print(f"{len(article_urls)} articles from fox news fetched")
-            if len(article_urls) >= 600:
+        articles = soup.find_all("div", {"class": "c-headline__content"})
+        for article in articles:
+            a_s = article.find_all("a")
+            for a in a_s:
+                href = a["href"]
+                if article_urls.count(href) == 0:
+                    article_urls.append(href)
+                    print(f"{len(article_urls)} articles from Folha (south america) fetched")
+        if len(article_urls) > 0:
+            if is_article_too_old(article_urls[-1]):
                 enough_articles = True
         page_index += 1
-        time.sleep(random.choice(range(5)))
     return article_urls
 
 def get_cnn_article_urls(keyword: str) -> []:
@@ -90,7 +90,7 @@ def get_spiegel_article_urls(keyword: str) -> []:
 
 def get_moscowtimes_article_urls(keyword: str) -> []:
     article_urls = []
-    pageindex = 1
+    page_index = 1
 
     url = f"https://www.themoscowtimes.com/api/search?query={keyword}&section=news"
     response = json.loads(requests.get(url).text)
@@ -101,11 +101,11 @@ def get_moscowtimes_article_urls(keyword: str) -> []:
 
 def get_sabc_article_urls(keyword: str) -> []:
     article_urls = []
-    pageindex = 1
+    page_index = 1
     enough_articles = False
 
     while not enough_articles:
-        url = f"https://www.sabcnews.com/sabcnews/page/{pageindex}/?s={keyword}"
+        url = f"https://www.sabcnews.com/sabcnews/page/{page_index}/?s={keyword}"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -120,16 +120,16 @@ def get_sabc_article_urls(keyword: str) -> []:
         if len(article_urls) > 0:
             if is_article_too_old(article_urls[-1]):
                 enough_articles = True
-        pageindex += 1
+        page_index += 1
     return article_urls
 
 def get_rferl_article_urls(keyword: str):
     article_urls = []
-    pageindex = 1
+    page_index = 1
     enough_articles = False
     
     while not enough_articles:
-        url = f"https://www.rferl.org/s?k={keyword}&tab=news&pi={pageindex}&r=any&pp=50"
+        url = f"https://www.rferl.org/s?k={keyword}&tab=news&pi={page_index}&r=any&pp=50"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -146,19 +146,19 @@ def get_rferl_article_urls(keyword: str):
         if len(article_urls) > 0:
             if is_article_too_old(article_urls[-1]):
                 enough_articles = True
-        pageindex += 1
+        page_index += 1
     return article_urls
 
 def get_chinadaily_article_urls(keyword: str):
     article_urls = []
     #Chinadaily starts with the pageIndex 0
-    pageindex = 0
+    page_index = 0
     enough_articles = False
 
     while not enough_articles:
         #Using chindailys advanced search
         # url = f"https://newssearch.chinadaily.com.cn/rest/en/search?publishedDateFrom=2018-01-01&publishedDateTo=2024-12-05&fullMust=climate&channel=&type=&curType=story&sort=dp&duplication=on&page=0&type[0]=story&channel[0]=2@cndy&source="
-        url = f"https://newssearch.chinadaily.com.cn/rest/en/search?keywords={keyword}&sort=dp&page={pageindex}&curType=story&type=&channel=&source="
+        url = f"https://newssearch.chinadaily.com.cn/rest/en/search?keywords={keyword}&sort=dp&page={page_index}&curType=story&type=&channel=&source="
         page = requests.get(url)
         page_decoded = json.loads(page.text)
 
@@ -170,7 +170,7 @@ def get_chinadaily_article_urls(keyword: str):
         if len(article_urls)%30 == 0 and len(article_urls) > 0:
             if is_article_too_old(article_urls[-1]):
                 enough_articles = True
-        pageindex += 1
+        page_index += 1
     return article_urls
 
 def get_article_url_list_for_page(newsPage: str, keyword: str = ""):
@@ -186,8 +186,8 @@ def get_article_url_list_for_page(newsPage: str, keyword: str = ""):
         return get_spiegel_article_urls(keyword)
     if newsPage == "cnn":
         return get_cnn_article_urls(keyword)
-    if newsPage == "fox":
-        return get_fox_article_urls(keyword)
+    if newsPage == "folha":
+        return get_folha_article_urls(keyword)
     raise ValueError("Invalid news page entered")
 
 def store_articles_in_file(newsPage: str, keyword: str = ""):
@@ -232,7 +232,7 @@ def main():
     start_thread(moscowtimes_active, "moscowtimes", keyword)
     start_thread(spiegel_active, "spiegel", keyword)
     start_thread(cnn_active, "cnn", keyword)
-    start_thread(fox_active, "fox", keyword)
+    start_thread(folha_active, "folha", keyword)
     
 if __name__=="__main__":
     main()
