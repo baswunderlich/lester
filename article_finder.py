@@ -18,8 +18,6 @@ cnn_active = sys.argv.count("cnn") > 0 or sys.argv.count("all") > 0
 folha_active = sys.argv.count("folha") > 0 or sys.argv.count("all") > 0
 
 def get_folha_article_urls(keyword: str) -> []:
-    #Fox news does not sort the articles by publishing date. We therefore just
-    #get a fixed amount and let them being sorted by numpy in the plotting
     article_urls = []
     page_index = 0
     enough_articles = False
