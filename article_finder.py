@@ -16,6 +16,42 @@ chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
 spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
 cnn_active = sys.argv.count("cnn") > 0 or sys.argv.count("all") > 0
 folha_active = sys.argv.count("folha") > 0 or sys.argv.count("all") > 0
+tass_active = sys.argv.count("tass") > 0 or sys.argv.count("all") > 0
+kyiv_active = sys.argv.count("kyiv") > 0 or sys.argv.count("all") > 0
+
+def get_tass_article_urls(keyword: str) -> []:
+    article_urls = []
+    page_index = 0
+    enough_articles = False
+
+    while not enough_articles:
+        url = f"https://tass.com/userApi/search"
+        body = {
+            "type":
+                [
+                    "default",
+                    "article"
+                ],
+            "sections": [],
+            "searchStr":"climate",
+            "range": None,
+            "sort":"date",
+            "from":page_index*20,
+            "size":(page_index+1)*20
+        }
+        raw_response = requests.post(url, json=body)
+        response = json.loads(raw_response.text)
+
+        for article in response[:3]:
+            href = "https://tass.com" + article["link"]
+            if article_urls.count(href) == 0:
+                article_urls.append(href)
+                print(f"{len(article_urls)} articles from Tass (Russia) fetched")
+        if len(article_urls) > 0 and len(article_urls) % 51 == 0:  #51 damit durch 3 teilbar (drei Artikel von jeder Seite)
+            if is_article_too_old(article_urls[-1]):
+                enough_articles = True
+        page_index += 1
+    return article_urls
 
 def get_folha_article_urls(keyword: str) -> []:
     article_urls = []
@@ -186,6 +222,8 @@ def get_article_url_list_for_page(newsPage: str, keyword: str = ""):
         return get_cnn_article_urls(keyword)
     if newsPage == "folha":
         return get_folha_article_urls(keyword)
+    if newsPage == "tass":
+        return get_tass_article_urls(keyword)
     raise ValueError("Invalid news page entered")
 
 def store_articles_in_file(newsPage: str, keyword: str = ""):
@@ -231,6 +269,7 @@ def main():
     start_thread(spiegel_active, "spiegel", keyword)
     start_thread(cnn_active, "cnn", keyword)
     start_thread(folha_active, "folha", keyword)
+    start_thread(tass_active, "tass", keyword)
     
 if __name__=="__main__":
     main()
