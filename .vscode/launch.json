@@ -1,7 +1,55 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
+
+        {
+            "name": "Python Debugger: Sentiment Analyzer Climate Folha",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["climate", "folha"]
+        },
+        {
+            "name": "Python Debugger: Article Finder Climate Tass",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["climate", "tass"]
+        },
+        {
+            "name": "Python Debugger: Article Finder Climate Folha",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["climate", "folha"]
+        },
+        {
+            "name": "Python Debugger: Sentiment Analyzer Climate CNN",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["climate", "cnn"]
+        },
+        {
+            "name": "Python Debugger: Article Finder Climate CNN",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["climate", "cnn"]
+        },
+        {
+            "name": "Python Debugger: Sentiment Climate All Cache",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["climate", "all", "cache"]
+        },
         {
             "name": "Python Debugger: Sentiment Climate All",
             "type": "debugpy",
