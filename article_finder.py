@@ -19,6 +19,30 @@ folha_active = sys.argv.count("folha") > 0 or sys.argv.count("all") > 0
 tass_active = sys.argv.count("tass") > 0 or sys.argv.count("all") > 0
 kyiv_active = sys.argv.count("kyiv") > 0 or sys.argv.count("all") > 0
 
+def get_kyiv_article_urls(keyword: str) -> []:
+    article_urls = []
+    page_index = 1
+    enough_articles = False
+
+    while not enough_articles:
+        url = f"https://www.kyivpost.com/search?q=climate&page={page_index}"
+        page = requests.get(url)
+        soup = BeautifulSoup(page.content, 'html.parser')
+
+        articles = soup.find_all("div", {"class": "title"})
+        for article in articles:
+            a_s = article.find_all("a")
+            for a in a_s:
+                href = a["href"]
+                if article_urls.count(href) == 0:
+                    article_urls.append(href)
+                    print(f"{len(article_urls)} articles from Kyiv (Ukraine) fetched")
+        if len(article_urls) > 0:
+            if is_article_too_old(article_urls[-1]):
+                enough_articles = True
+        page_index += 1
+    return article_urls
+
 def get_tass_article_urls(keyword: str) -> []:
     article_urls = []
     page_index = 0
@@ -224,6 +248,8 @@ def get_article_url_list_for_page(newsPage: str, keyword: str = ""):
         return get_folha_article_urls(keyword)
     if newsPage == "tass":
         return get_tass_article_urls(keyword)
+    if newsPage == "kyiv":
+        return get_kyiv_article_urls(keyword)
     raise ValueError("Invalid news page entered")
 
 def store_articles_in_file(newsPage: str, keyword: str = ""):
@@ -270,6 +296,7 @@ def main():
     start_thread(cnn_active, "cnn", keyword)
     start_thread(folha_active, "folha", keyword)
     start_thread(tass_active, "tass", keyword)
+    start_thread(kyiv_active, "kyiv", keyword)
     
 if __name__=="__main__":
     main()

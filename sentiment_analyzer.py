@@ -30,6 +30,8 @@ spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
 cnn_active = sys.argv.count("cnn") > 0 or sys.argv.count("all") > 0
 folha_active = sys.argv.count("folha") > 0 or sys.argv.count("all") > 0
 tass_active = sys.argv.count("tass") > 0 or sys.argv.count("all") > 0
+kyiv_active = sys.argv.count("kyiv") > 0 or sys.argv.count("all") > 0
+
 
 class ArticleEncoder(json.JSONEncoder):
         def default(self, o):
@@ -205,6 +207,7 @@ def main():
     cnn_articles = []
     folha_articles = []
     tass_articles = []
+    kyiv_articles = []
 
     results_sabc = []
     results_rferl = []
@@ -214,6 +217,7 @@ def main():
     results_cnn = []
     results_folha = []
     results_tass = []
+    results_kyiv = []
 
     if not in_cache_mode:    
         threads = [
@@ -224,7 +228,8 @@ def main():
             ScraperThread(program=scrap_articles, news_site="spiegel", keyword=keyword),
             ScraperThread(program=scrap_articles, news_site="cnn", keyword=keyword),
             ScraperThread(program=scrap_articles, news_site="folha", keyword=keyword),
-            ScraperThread(program=scrap_articles, news_site="tass", keyword=keyword)
+            ScraperThread(program=scrap_articles, news_site="tass", keyword=keyword),
+            ScraperThread(program=scrap_articles, news_site="kyiv", keyword=keyword)
         ]
 
         if sabc_active:
@@ -243,6 +248,8 @@ def main():
             threads[6].start()
         if tass_active:
             threads[7].start()
+        if kyiv_active:
+            threads[8].start()
         
         for t in threads:
             if t.is_alive():
@@ -256,6 +263,7 @@ def main():
         cnn_articles = threads[5].articles
         folha_articles = threads[6].articles
         tass_articles = threads[7].articles
+        kyiv_articles = threads[8].articles
 
         if sabc_active:
             results_sabc = analyze_articles(sabc_articles, news_site="sabc", keyword=keyword)
@@ -273,6 +281,8 @@ def main():
             results_folha = analyze_articles(folha_articles, news_site="folha", keyword=keyword)
         if tass_active:
             results_tass = analyze_articles(tass_articles, news_site="tass", keyword=keyword)
+        if kyiv_active:
+            results_kyiv = analyze_articles(kyiv_articles, news_site="kyiv", keyword=keyword)
 
     else:
         if sabc_active:
@@ -291,6 +301,8 @@ def main():
             results_folha = read_cached_results(news_site="folha", keyword=keyword)
         if tass_active:
             results_tass = read_cached_results(news_site="tass", keyword=keyword)
+        if kyiv_active:
+            results_kyiv = read_cached_results(news_site="kyiv", keyword=keyword)
 
     if sabc_active:
         plot_result(results=results_sabc, news_site="sabc", keyword=keyword)
@@ -308,6 +320,8 @@ def main():
         plot_result(results=results_folha, news_site="folha", keyword=keyword)
     if tass_active:
         plot_result(results=results_tass, news_site="tass", keyword=keyword)
+    if kyiv_active:
+        plot_result(results=results_kyiv, news_site="kyiv", keyword=keyword)
     show_plots(keyword=keyword)
 
 if __name__=="__main__":

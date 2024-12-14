@@ -1,7 +1,14 @@
 {
     "version": "0.2.0",
     "configurations": [
-
+        {
+            "name": "Python Debugger: Russia kyiv",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["russia", "kyiv"]
+        },
         {
             "name": "Python Debugger: Sentiment Analyzer Climate Folha",
             "type": "debugpy",
