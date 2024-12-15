@@ -21,6 +21,7 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     publishing_dates = np.vectorize(lambda result: result["date_publish"])(filtered_results)
     if not filtered_results:
         print("no results :(")
+        return
     dates = np.array([datetime.datetime.strptime(d, dateFormat) for d in publishing_dates])
     
     # Sort data by dates
@@ -46,8 +47,8 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
 
     num_ticks = 25
     
-    # Set up the figure with two subplots
-    fig, axs = plt.subplots(2, 1, figsize=(11, 8))
+    # Set up the figure with three subplots
+    fig, axs = plt.subplots(3, 1, figsize=(11, 12))
     
     # Plot Positive and Negative Sentiments
     axs[0].plot(dates, positive_scores, label="Positive Sentiment", color="#0e7800", marker='o')
@@ -73,10 +74,25 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     axs[1].xaxis.set_major_locator(MaxNLocator(nbins=num_ticks))
     axs[1].tick_params(axis="x", rotation=45)
     axs[1].set_xlim(dates[0] - timedelta(days=3), dates[-1])  # Set x-axis limits
-    
 
+    # Plot Monthly Article Counts (Histogram)
+    months = [date.replace(day=1) for date in dates]  # Normalize dates to the first day of the month
+    unique_months, article_counts = np.unique(months, return_counts=True)
+
+    axs[2].bar(unique_months, article_counts, width=20, color="#007acc")
+    axs[2].set_title("Number of Articles Published Per Month", fontsize=14)
+    axs[2].set_ylabel("Article Count", fontsize=12)
+    axs[2].set_xlabel("Month", fontsize=12)
+    axs[2].grid(True)
+    axs[2].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    axs[2].tick_params(axis="x", rotation=45)
+    axs[2].yaxis.set_major_locator(MaxNLocator(integer=True))  # Ensure y-axis labels are integers
+    axs[2].set_xlim(unique_months[0] - timedelta(days=15), unique_months[-1] + timedelta(days=15))
+
+    # Add to global plots for comparisons
     global_axs[0].plot(dates, diff_fn(x), label=news_site)
     global_axs[1].plot(dates, diff_fn_02(x), label=news_site)
+
     # Adjust layout
     plt.tight_layout()
 
