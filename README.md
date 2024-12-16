@@ -29,8 +29,8 @@ currently supported news pages are:
 - moscowtimes
 - tass
 - cnn (does not work perfectly)
-- kyiv post
-- Folha de S.Paulo
+- kyiv post (keyword: kyiv)
+- Folha de S.Paulo (keyword: folha)
   
 the keyword 'all' will fetch results of all this pages
 
@@ -52,4 +52,4 @@ Example:
 | offline      | Will not download any articles       |
 | cache   | When set, no articles will be analyzed but the stored results will be used        |
 | all   | All known news sites articles will be analyzed        |
-| \<news site\>   | Just this ONE newssite will ne analyzed        |
+| \<news site\>   | Just the named newssites will be analyzed        |
