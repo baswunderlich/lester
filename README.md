@@ -26,7 +26,13 @@ currently supported news pages are:
 - chinadaily
 - moscowtimes
 - spiegel
-the keyword all will fetch results of all this pages
+- moscowtimes
+- tass
+- cnn (does not work perfectly)
+- kyiv post
+- Folha de S.Paulo
+  
+the keyword 'all' will fetch results of all this pages
 
 ## sentiment_analyzer.py (sentiment analyzer and plotter)
     python ./sentiment_analyzer.py <keyword> <keyword> ...
