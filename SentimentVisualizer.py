@@ -87,7 +87,7 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     axs[2].set_ylabel("Article Count", fontsize=12)
     axs[2].set_xlabel("Month", fontsize=12)
     axs[2].grid(True)
-    axs[2].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    axs[2].xaxis.set_major_locator(MaxNLocator(nbins=num_ticks))
     axs[2].tick_params(axis="x", rotation=45)
     axs[2].yaxis.set_major_locator(MaxNLocator(integer=True))  # Ensure y-axis labels are integers
     axs[2].set_xlim(unique_months[0] - timedelta(days=15), unique_months[-1] + timedelta(days=15))
