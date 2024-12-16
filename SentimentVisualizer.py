@@ -76,6 +76,9 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     axs[1].set_xlim(dates[0] - timedelta(days=3), dates[-1])  # Set x-axis limits
 
     # Plot Monthly Article Counts (Histogram)
+    # Normalize dates by stripping time precision
+    dates = np.array([date.replace(hour=0, minute=0, second=0, microsecond=0) for date in dates])
+
     months = [date.replace(day=1) for date in dates]  # Normalize dates to the first day of the month
     unique_months, article_counts = np.unique(months, return_counts=True)
 
