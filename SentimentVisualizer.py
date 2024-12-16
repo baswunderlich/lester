@@ -8,6 +8,8 @@ from datetime import timedelta
 global_fig, global_axs = plt.subplots(2, 1, figsize=(11, 8))
 
 def plot_result(results, news_site, keyword, start_date="2018-01-01"):
+    # Set up a locator for every 4 months
+    four_months = mdates.MonthLocator(interval=4)  # Tick every 4 months 
     dateFormat = "%Y-%m-%d %H:%M:%S"
     start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
     
@@ -44,8 +46,6 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     diff_fn_02 = np.poly1d(diff_coef_02)
 
     diff_dates = dates  # Dates for the second plot remain the same
-
-    num_ticks = 25
     
     # Set up the figure with three subplots
     fig, axs = plt.subplots(3, 1, figsize=(11, 12))
@@ -58,7 +58,7 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     axs[0].legend()
     axs[0].grid(True)
     axs[0].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-    axs[0].xaxis.set_major_locator(MaxNLocator(nbins=num_ticks))
+    axs[0].xaxis.set_major_locator(four_months)
     axs[0].tick_params(axis="x", rotation=45)
     axs[0].set_xlim(dates[0] - timedelta(days=3), dates[-1])  # Set x-axis limits
     
@@ -71,7 +71,7 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     axs[1].legend()
     axs[1].grid(True)
     axs[1].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-    axs[1].xaxis.set_major_locator(MaxNLocator(nbins=num_ticks))
+    axs[1].xaxis.set_major_locator(four_months)
     axs[1].tick_params(axis="x", rotation=45)
     axs[1].set_xlim(dates[0] - timedelta(days=3), dates[-1])  # Set x-axis limits
 
@@ -87,7 +87,8 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     axs[2].set_ylabel("Article Count", fontsize=12)
     axs[2].set_xlabel("Month", fontsize=12)
     axs[2].grid(True)
-    axs[2].xaxis.set_major_locator(MaxNLocator(nbins=num_ticks))
+    axs[2].xaxis.set_major_locator(four_months)
+    axs[2].xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m')) # Format as "YYYY-MM"
     axs[2].tick_params(axis="x", rotation=45)
     axs[2].yaxis.set_major_locator(MaxNLocator(integer=True))  # Ensure y-axis labels are integers
     axs[2].set_xlim(unique_months[0] - timedelta(days=15), unique_months[-1] + timedelta(days=15))
