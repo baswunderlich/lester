@@ -26,7 +26,13 @@ currently supported news pages are:
 - chinadaily
 - moscowtimes
 - spiegel
-the keyword all will fetch results of all this pages
+- moscowtimes
+- tass
+- cnn (does not work perfectly)
+- kyiv post (keyword: kyiv)
+- Folha de S.Paulo (keyword: folha)
+  
+the keyword 'all' will fetch results of all this pages
 
 ## sentiment_analyzer.py (sentiment analyzer and plotter)
     python ./sentiment_analyzer.py <keyword> <keyword> ...
@@ -46,4 +52,4 @@ Example:
 | offline      | Will not download any articles       |
 | cache   | When set, no articles will be analyzed but the stored results will be used        |
 | all   | All known news sites articles will be analyzed        |
-| \<news site\>   | Just this ONE newssite will ne analyzed        |
+| \<news site\>   | Just the named newssites will be analyzed        |
