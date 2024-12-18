@@ -4,10 +4,17 @@ from matplotlib.ticker import MaxNLocator
 import datetime
 import matplotlib.dates as mdates
 from datetime import timedelta
+import sys
+
 
 global_fig, global_axs = plt.subplots(2, 1, figsize=(11, 8))
 
 def plot_result(results, news_site, keyword, start_date="2018-01-01"):
+    if len(results) == 0:
+        print(f"Results of {news_site} when plotting for {keyword} were empty")
+        sys.exit(1)
+
+
     # Set up a locator for every 4 months
     four_months = mdates.MonthLocator(interval=4)  # Tick every 4 months 
     dateFormat = "%Y-%m-%d %H:%M:%S"
