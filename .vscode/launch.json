@@ -2,6 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: Taiwan All",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["taiwan", "all"]
+        },
+        {
             "name": "Python Debugger: Russia kyiv",
             "type": "debugpy",
             "request": "launch",

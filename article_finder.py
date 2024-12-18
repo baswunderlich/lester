@@ -192,7 +192,7 @@ def get_rferl_article_urls(keyword: str):
         soup = BeautifulSoup(page.content, 'html.parser')
 
         articles = soup.find_all("div", {"class": "media-block"})
-        for _, article in enumerate(articles, start=5):
+        for article in articles[:5]:
             a_s = article.find_all("a")
             for a in a_s:
                 #At this site. The hrefs do not include the serveradresse.
@@ -228,7 +228,8 @@ def get_chinadaily_article_urls(keyword: str):
         if len(article_urls)%30 == 0 and len(article_urls) > 0:
             if is_article_too_old(article_urls[-1]):
                 enough_articles = True
-        page_index += 1
+        page_index += 2
+        # page_index += 2 # skip one page because of soooo many articles with the keyword "economy"
     return article_urls
 
 def get_article_url_list_for_page(newsPage: str, keyword: str = ""):
