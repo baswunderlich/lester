@@ -22,15 +22,15 @@ in_cache_mode = sys.argv.count("cache") > 0
 in_offline_mode = sys.argv.count("offline") >= 1
 in_rampage_mode = sys.argv.count("rampage") >= 1
 
-sabc_active = sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0
-moscowtimes_active = sys.argv.count("moscowtimes") > 0 or sys.argv.count("all") > 0
-rferl_active =sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0
-chinadaily_active =sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0
-spiegel_active = sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0
-cnn_active = sys.argv.count("cnn") > 0 or sys.argv.count("all") > 0
-folha_active = sys.argv.count("folha") > 0 or sys.argv.count("all") > 0
-tass_active = sys.argv.count("tass") > 0 or sys.argv.count("all") > 0
-kyiv_active = sys.argv.count("kyiv") > 0 or sys.argv.count("all") > 0
+sabc_active = (sys.argv.count("sabc") > 0 or sys.argv.count("all") > 0) and not (sys.argv.count("all") > 0 and sys.argv.count("sabc") > 0)
+moscowtimes_active = (sys.argv.count("moscowtimes") > 0 or sys.argv.count("all") > 0) and not (sys.argv.count("all") > 0 and sys.argv.count("moscowtimes") > 0)
+rferl_active = (sys.argv.count("rferl") > 0 or sys.argv.count("all") > 0)  and not (sys.argv.count("all") > 0 and sys.argv.count("rferl") > 0)
+chinadaily_active = (sys.argv.count("chinadaily") > 0 or sys.argv.count("all") > 0)  and not (sys.argv.count("all") > 0 and sys.argv.count("chinadaily") > 0)
+spiegel_active = (sys.argv.count("spiegel") > 0 or sys.argv.count("all") > 0)  and not (sys.argv.count("all") > 0 and sys.argv.count("spiegel") > 0)
+cnn_active = (sys.argv.count("cnn") > 0 or sys.argv.count("all") > 0)  and not (sys.argv.count("all") > 0 and sys.argv.count("cnn") > 0)
+folha_active = (sys.argv.count("folha") > 0 or sys.argv.count("all") > 0)  and not (sys.argv.count("all") > 0 and sys.argv.count("folha") > 0)
+tass_active = (sys.argv.count("tass") > 0 or sys.argv.count("all") > 0) and not (sys.argv.count("all") > 0 and sys.argv.count("tass") > 0)
+kyiv_active = (sys.argv.count("kyiv") > 0 or sys.argv.count("all") > 0) and not (sys.argv.count("all") > 0 and sys.argv.count("kyiv") > 0)
 
 
 class ArticleEncoder(json.JSONEncoder):
@@ -115,7 +115,7 @@ def sentiment_analyse(sentiment_text) -> [int]:
     score = SentimentIntensityAnalyzer().polarity_scores(sentiment_text)
     result = [score["pos"], score["neg"]]
     if len(result) < 2:
-        return [0,0]
+        return None
     return result
 
 #This function returns a list of tuples. Every tuple contains the following:
