@@ -19,6 +19,10 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     four_months = mdates.MonthLocator(interval=4)  # Tick every 4 months 
     dateFormat = "%Y-%m-%d %H:%M:%S"
     start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+
+    # Set up y limits for plots
+    y_min, y_max = -0.2, 0.2
+    y_ticks = np.arange(y_min, y_max + 0.01, 0.05)  # Steps of 0.05 
     
     # Extract and process dates
     filtered_results = [
@@ -90,7 +94,7 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     unique_months, article_counts = np.unique(months, return_counts=True)
 
     axs[2].bar(unique_months, article_counts, width=20, color="#007acc")
-    axs[2].set_title("Number of Articles Published Per Month", fontsize=14)
+    axs[2].set_title(f"Number of Articles Published Per Month for {news_site} on keyword {keyword}", fontsize=14)
     axs[2].set_ylabel("Article Count", fontsize=12)
     axs[2].set_xlabel("Month", fontsize=12)
     axs[2].grid(True)
@@ -100,9 +104,16 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     axs[2].yaxis.set_major_locator(MaxNLocator(integer=True))  # Ensure y-axis labels are integers
     axs[2].set_xlim(unique_months[0] - timedelta(days=15), unique_months[-1] + timedelta(days=15))
 
+    # Apply y limits to all plots
+    axs[1].set_yticks(np.arange(-0.20, 0.3 + 0.01, 0.05))
+
     # Add to global plots for comparisons
     global_axs[0].plot(dates, diff_fn(x), label=news_site)
     global_axs[1].plot(dates, diff_fn_02(x), label=news_site)
+
+    for ax in global_axs:
+        ax.set_ylim(y_min, y_max)
+        ax.set_yticks(y_ticks)
 
     # Adjust layout
     plt.tight_layout()
