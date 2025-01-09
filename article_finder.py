@@ -168,7 +168,7 @@ def get_sabc_article_urls(keyword: str) -> []:
         soup = BeautifulSoup(page.content, 'html.parser')
 
         articles = soup.find_all("article")
-        for article in articles:
+        for article in articles[:10]:
             a_s = article.find_all("a")
             for a in a_s:
                 href = a["href"]
@@ -178,7 +178,7 @@ def get_sabc_article_urls(keyword: str) -> []:
         if len(article_urls) > 0:
             if is_article_too_old(article_urls[-1]):
                 enough_articles = True
-        page_index += 1
+        page_index += 3
     return article_urls
 
 def get_rferl_article_urls(keyword: str):
@@ -218,9 +218,13 @@ def get_chinadaily_article_urls(keyword: str):
         # url = f"https://newssearch.chinadaily.com.cn/rest/en/search?publishedDateFrom=2018-01-01&publishedDateTo=2024-12-05&fullMust=climate&channel=&type=&curType=story&sort=dp&duplication=on&page=0&type[0]=story&channel[0]=2@cndy&source="
         url = f"https://newssearch.chinadaily.com.cn/rest/en/search?keywords={keyword}&sort=dp&page={page_index}&curType=story&type=&channel=&source="
         page = requests.get(url)
-        page_decoded = json.loads(page.text)
+        page_decoded = []
+        try:
+            page_decoded = json.loads(page.text)
+        except:
+            print(page.text)
 
-        for article in page_decoded["content"][:1]:
+        for article in page_decoded["content"][:2]:
             href = article["url"]
             if article_urls.count(href) == 0:
                 article_urls.append(href)
