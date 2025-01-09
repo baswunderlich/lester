@@ -304,6 +304,7 @@ def main():
         if kyiv_active:
             results_kyiv = read_cached_results(news_site="kyiv", keyword=keyword)
 
+
     if sabc_active:
         plot_result(results=results_sabc, news_site="sabc", keyword=keyword)
     if rferl_active:
@@ -322,7 +323,7 @@ def main():
         plot_result(results=results_tass, news_site="tass", keyword=keyword)
     if kyiv_active:
         plot_result(results=results_kyiv, news_site="kyiv", keyword=keyword)
-    show_plots(keyword=keyword)
+    #show_plots(keyword=keyword)
 
 if __name__=="__main__":
     setupNltk()
