@@ -59,6 +59,9 @@ def plot_result(results, news_site, keyword, start_date="2018-01-01"):
     # Add to global plots for comparisons
     global_axs.plot(dates, diff_fn(x), label=news_site)
 
+    global_axs.set_yticks(y_ticks)
+    global_axs.set_ylim(y_min, y_max)
+
 
 def show_plots(keyword):
     global_axs.legend()
