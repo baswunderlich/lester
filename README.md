@@ -1,5 +1,7 @@
 # lester
 This is a tool for sentiment analysis on news sites
+## Example result
+![image info](climate_overview.png)
 
 ## Setup
 Python: 3.10.4
